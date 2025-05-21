@@ -1,5 +1,7 @@
 # trade-imports-message-replay
 
+Content pending further review.
+
 Core delivery C# ASP.NET backend template.
 
 * [Install MongoDB](#install-mongodb)
@@ -77,7 +79,7 @@ dotnet test
 
 Run CDP-Deployments application:
 ```bash
-dotnet run --project TradeImportsMessageReplay --launch-profile Development
+dotnet run --project ./src/MessageReplay --launch-profile TradeImportsMessageReplay
 ```
 
 ### SonarCloud
