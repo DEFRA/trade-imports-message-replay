@@ -1,0 +1,18 @@
+﻿{
+  "profiles": {
+    "TradeImportsMessageReplay": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AWS_ACCESS_KEY_ID": "test",
+        "AWS_REGION": "eu-west-2",
+        "AWS_SECRET_ACCESS_KEY": "test",
+        "ENVIRONMENT": "local",
+        "SQS_ENDPOINT": "http://localhost:4566"
+      }
+    }
+  }
+}
