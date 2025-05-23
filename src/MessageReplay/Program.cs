@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
+using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
@@ -62,6 +63,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddHttpClient();
     builder.Services.AddDbContext(builder.Configuration);
     builder.Services.AddAuthenticationAuthorization();
+    builder.Services.AddBlobStorage(builder.Configuration);
 }
 
 static WebApplication BuildWebApplication(WebApplicationBuilder builder)

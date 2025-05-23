@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Health;
@@ -10,6 +11,11 @@ public static class ServiceCollectionExtensions
     {
         services
             .AddHealthChecks()
+            .AddAzureBlobStorage(
+                sp => sp.GetRequiredService<IBlobServiceClientFactory>().CreateBlobServiceClient(),
+                timeout: TimeSpan.FromSeconds(15),
+                tags: [WebApplicationExtensions.Extended]
+            )
             .AddMongoDb(
                 provider => provider.GetRequiredService<IMongoDatabase>(),
                 timeout: TimeSpan.FromSeconds(10),

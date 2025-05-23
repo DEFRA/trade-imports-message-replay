@@ -25,12 +25,30 @@ services:
       - mongodb-data:/data
     restart: always
 
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    restart: always
+    command: 'azurite --oauth basic --cert /workspace/127.0.0.1.pem --key /workspace/127.0.0.1-key.pem --location /workspace --debug /workspace/debug.log --blobHost 0.0.0.0  --queueHost 0.0.0.0 --tableHost 0.0.0.0  --loose'
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002" 
+    volumes:
+      - ./azuriteData:/workspace
+    healthcheck: 
+      test: nc 127.0.0.1 10000 -z
+      interval: 1s
+      retries: 30
+
   message-replay:
     build:
       args:
         DEFRA_NUGET_PAT: ${DEFRA_NUGET_PAT}
     depends_on:
       mongodb:
+        condition: service_healthy
+      azurite:
         condition: service_healthy
     env_file:
       - 'compose/aws.env'
