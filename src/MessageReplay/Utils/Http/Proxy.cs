@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 
+[ExcludeFromCodeCoverage]
 public static class Proxy
 {
     public const string ProxyClient = "proxy";
@@ -17,7 +18,6 @@ public static class Proxy
     *  2. Use the IHttpClientFactory to create a named instance of HttpClient:
     *     `clientFactory.CreateClient(Proxy.ProxyClient);`
     */
-    [ExcludeFromCodeCoverage]
     public static void AddHttpProxyClient(this IServiceCollection services)
     {
         // Some .net connections use this http client

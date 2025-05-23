@@ -2,9 +2,11 @@ using Azure.Core.Pipeline;
 using Azure.Storage;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 
+[ExcludeFromCodeCoverage]
 public class BlobServiceClientFactory(
     IServiceProvider serviceProvider,
     IOptions<BlobServiceOptions> defaultOptions,
