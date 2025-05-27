@@ -4,6 +4,7 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
+using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
@@ -74,28 +75,13 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddAuthenticationAuthorization();
     builder.Services.AddBlobStorage(builder.Configuration);
 
-    var mongoOptions = builder.Configuration.GetSection(MongoDbOptions.SectionName).Get<MongoDbOptions>();
-
     builder
         .Services.AddHangfire(c =>
             c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseSerilogLogProvider()
-                .UseMongoStorage(
-                    MongoClientSettings.FromConnectionString(mongoOptions?.DatabaseUri),
-                    mongoOptions?.DatabaseName,
-                    new MongoStorageOptions
-                    {
-                        MigrationOptions = new MongoMigrationOptions
-                        {
-                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
-                            BackupStrategy = new CollectionMongoBackupStrategy(),
-                        },
-                        Prefix = "hangfire.mongo",
-                        CheckConnection = true,
-                    }
-                )
+                .UseHangfireStorage(builder.Configuration, integrationTest)
         )
         .AddHangfireServer();
 }
