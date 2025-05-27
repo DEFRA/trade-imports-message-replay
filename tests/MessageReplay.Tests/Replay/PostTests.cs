@@ -15,7 +15,13 @@ public class PostTests(MessageReplayWebApplicationFactory factory, ITestOutputHe
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.PostAsync("/replay", new StringContent(JsonSerializer.Serialize(new ReplayRequest()), new MediaTypeHeaderValue("application/json")));
+        var response = await client.PostAsync(
+            "/replay",
+            new StringContent(
+                JsonSerializer.Serialize(new ReplayRequest()),
+                new MediaTypeHeaderValue("application/json")
+            )
+        );
 
         await Verify(response);
         await Verify(await response.Content.ReadAsStringAsync())
@@ -27,7 +33,13 @@ public class PostTests(MessageReplayWebApplicationFactory factory, ITestOutputHe
     {
         var client = CreateClient(addDefaultAuthorizationHeader: false);
 
-        var response = await client.PostAsync("/replay", new  StringContent(JsonSerializer.Serialize(new ReplayRequest()), new MediaTypeHeaderValue("application/json")));
+        var response = await client.PostAsync(
+            "/replay",
+            new StringContent(
+                JsonSerializer.Serialize(new ReplayRequest()),
+                new MediaTypeHeaderValue("application/json")
+            )
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
@@ -37,7 +49,13 @@ public class PostTests(MessageReplayWebApplicationFactory factory, ITestOutputHe
     {
         var client = CreateClient();
 
-        var response = await client.PostAsync("/replay", new StringContent(JsonSerializer.Serialize(new ReplayRequest()), new MediaTypeHeaderValue("application/json")));
+        var response = await client.PostAsync(
+            "/replay",
+            new StringContent(
+                JsonSerializer.Serialize(new ReplayRequest()),
+                new MediaTypeHeaderValue("application/json")
+            )
+        );
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
