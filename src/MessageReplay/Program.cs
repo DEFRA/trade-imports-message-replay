@@ -7,6 +7,7 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
+using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
 using Hangfire.InMemory;
@@ -71,6 +72,9 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddHealthChecks();
     builder.Services.AddHealth(builder.Configuration, integrationTest);
     builder.Services.AddHttpClient();
+    // Proxy HTTP Client
+    builder.Services.AddTransient<ProxyHttpMessageHandler>();
+    builder.Services.AddHttpClient("proxy").ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
     builder.Services.AddDbContext(builder.Configuration);
     builder.Services.AddAuthenticationAuthorization();
     builder.Services.AddBlobStorage(builder.Configuration);
