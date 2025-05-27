@@ -3,9 +3,9 @@ using System.Net;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 
+[ExcludeFromCodeCoverage]
 public class ProxyHttpMessageHandler : HttpClientHandler
 {
-    [ExcludeFromCodeCoverage]
     public ProxyHttpMessageHandler()
     {
         var proxyUri = Environment.GetEnvironmentVariable("CDP_HTTPS_PROXY");
