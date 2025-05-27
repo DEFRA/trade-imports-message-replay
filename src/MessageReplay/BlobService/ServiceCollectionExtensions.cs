@@ -12,11 +12,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddBlobStorage(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddHttpClient();
-
-        // Some .net connections use this http client
-        services.AddHttpProxyClient();
-
         // The azure client has it's own way of proxying :|
         services
             .AddHttpClient("Msal")
