@@ -12,6 +12,6 @@ public class HealthTests : IntegrationTestBase
 
         var response = await client.GetAsync("/health/all");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, response.Content.ReadAsStringAsync().Result);
     }
 }
