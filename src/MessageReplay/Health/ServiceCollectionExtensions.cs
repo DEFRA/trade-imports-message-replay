@@ -7,11 +7,14 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Health;
 [ExcludeFromCodeCoverage]
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddHealth(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddHealth(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool isIntegrationTests
+    )
     {
-        services
+        var healthChecksBuilder = services
             .AddHealthChecks()
-            .AddUrl(new Uri(configuration.GetValue<string>("GatewayOptions:HealthUri")!), "Gateway Api")
             .AddAzureBlobStorage(
                 sp => sp.GetRequiredService<IBlobServiceClientFactory>().CreateBlobServiceClient(),
                 timeout: TimeSpan.FromSeconds(15),
@@ -22,6 +25,14 @@ public static class ServiceCollectionExtensions
                 timeout: TimeSpan.FromSeconds(10),
                 tags: [WebApplicationExtensions.Extended]
             );
+
+        if (!isIntegrationTests)
+        {
+            healthChecksBuilder.AddUrl(
+                new Uri(configuration.GetValue<string>("GatewayOptions:HealthUri")!),
+                "Gateway Api"
+            );
+        }
 
         return services;
     }
