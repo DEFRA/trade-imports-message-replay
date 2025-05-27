@@ -68,7 +68,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.ConfigureHttpClientDefaults(options => options.AddStandardResilienceHandler());
     builder.Services.AddProblemDetails();
     builder.Services.AddHealthChecks();
-    builder.Services.AddHealth(builder.Configuration);
+    builder.Services.AddHealth(builder.Configuration, integrationTest);
     builder.Services.AddHttpClient();
     builder.Services.AddDbContext(builder.Configuration);
     builder.Services.AddAuthenticationAuthorization();
