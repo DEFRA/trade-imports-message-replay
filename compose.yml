@@ -25,6 +25,21 @@ services:
       - mongodb-data:/data
     restart: always
 
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    hostname: azurite
+    restart: always
+    ports:
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002" 
+    volumes:
+      - ./azuriteData:/workspace
+    healthcheck: 
+      test: nc 127.0.0.1 10000 -z
+      interval: 1s
+      retries: 30
+
   message-replay:
     build:
       args:
@@ -32,14 +47,23 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      azurite:
+        condition: service_healthy
+      wiremock:
+        condition: service_started
     env_file:
       - 'compose/aws.env'
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ENVIRONMENT: local
       PORT: 8080
+      GatewayOptions__HealthUri: http://wiremock/health
       Mongo__DatabaseUri: mongodb://mongodb:27017/?directConnection=true
-      SQS_ENDPOINT: http://localstack:4566
+      BlobServiceOptions__CredentialType: StorageSharedKeyCredential
+      BlobServiceOptions__AzureClientId: devstoreaccount1
+      BlobServiceOptions__AzureClientSecret: Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==
+      BlobServiceOptions__DmpBlobContainer: local
+      BlobServiceOptions__DmpBlobUri: http://azurite:10000/devstoreaccount1
     ports:
       - "8080:8080"
     healthcheck:
@@ -48,6 +72,13 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
+  
+  wiremock:
+    environment:
+      TZ: Europe/London
+    image: sheyenrath/wiremock.net:latest
+    ports:
+      - "9090:80"
 
 volumes:
   mongodb-data:

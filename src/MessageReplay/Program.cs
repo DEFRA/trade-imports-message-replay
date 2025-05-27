@@ -1,10 +1,22 @@
 using System.Text.Json.Serialization;
+using Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
+using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Data;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
+using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
+using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
+using Hangfire;
+using Hangfire.InMemory;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
@@ -58,10 +70,24 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.ConfigureHttpClientDefaults(options => options.AddStandardResilienceHandler());
     builder.Services.AddProblemDetails();
     builder.Services.AddHealthChecks();
-    builder.Services.AddHealth(builder.Configuration);
+    builder.Services.AddHealth(builder.Configuration, integrationTest);
     builder.Services.AddHttpClient();
+    // Proxy HTTP Client
+    builder.Services.AddTransient<ProxyHttpMessageHandler>();
+    builder.Services.AddHttpClient("proxy").ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
     builder.Services.AddDbContext(builder.Configuration);
     builder.Services.AddAuthenticationAuthorization();
+    builder.Services.AddBlobStorage(builder.Configuration);
+
+    builder
+        .Services.AddHangfire(c =>
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSerilogLogProvider()
+                .UseHangfireStorage(builder.Configuration, integrationTest)
+        )
+        .AddHangfireServer();
 }
 
 static WebApplication BuildWebApplication(WebApplicationBuilder builder)
@@ -72,7 +98,9 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapHealth();
+    app.MapReplayEndpoints();
     app.UseStatusCodePages();
+    app.UseHangfireDashboard();
     app.UseExceptionHandler(
         new ExceptionHandlerOptions
         {

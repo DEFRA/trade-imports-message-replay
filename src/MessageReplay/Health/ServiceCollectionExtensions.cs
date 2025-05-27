@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Health;
@@ -6,15 +7,32 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Health;
 [ExcludeFromCodeCoverage]
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddHealth(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddHealth(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool isIntegrationTests
+    )
     {
-        services
+        var healthChecksBuilder = services
             .AddHealthChecks()
+            .AddAzureBlobStorage(
+                sp => sp.GetRequiredService<IBlobServiceClientFactory>().CreateBlobServiceClient(),
+                timeout: TimeSpan.FromSeconds(15),
+                tags: [WebApplicationExtensions.Extended]
+            )
             .AddMongoDb(
                 provider => provider.GetRequiredService<IMongoDatabase>(),
                 timeout: TimeSpan.FromSeconds(10),
                 tags: [WebApplicationExtensions.Extended]
             );
+
+        if (!isIntegrationTests)
+        {
+            healthChecksBuilder.AddUrl(
+                new Uri(configuration.GetValue<string>("GatewayOptions:HealthUri")!),
+                "Gateway Api"
+            );
+        }
 
         return services;
     }
