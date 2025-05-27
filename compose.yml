@@ -49,12 +49,15 @@ services:
         condition: service_healthy
       azurite:
         condition: service_healthy
+      wiremock:
+        condition: service_started
     env_file:
       - 'compose/aws.env'
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ENVIRONMENT: local
       PORT: 8080
+      GatewayOptions__HealthUri: http://wiremock/health
       Mongo__DatabaseUri: mongodb://mongodb:27017/?directConnection=true
       BlobServiceOptions__CredentialType: StorageSharedKeyCredential
       BlobServiceOptions__AzureClientId: devstoreaccount1
@@ -69,6 +72,13 @@ services:
       timeout: 5s
       retries: 10
       start_period: 5s
+  
+  wiremock:
+    environment:
+      TZ: Europe/London
+    image: sheyenrath/wiremock.net:latest
+    ports:
+      - "9090:80"
 
 volumes:
   mongodb-data:
