@@ -34,7 +34,8 @@ public class ProxyHttpMessageHandler : HttpClientHandler
     {
         var username = uri.UserName;
         var password = uri.Password;
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password)) return null;
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            return null;
         return new NetworkCredential(username, password);
     }
 }
