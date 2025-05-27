@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Health;
 
@@ -15,22 +15,26 @@ public static class UrisHealthCheckBuilderExtensions
         Action<IServiceProvider, HttpClient>? configureClient = null,
         HealthStatus? failureStatus = default,
         IEnumerable<string>? tags = default,
-        TimeSpan? timeout = default)
+        TimeSpan? timeout = default
+    )
     {
         var registrationName = name;
-        builder.Services.AddHttpClient(registrationName)
+        builder
+            .Services.AddHttpClient(registrationName)
             .ConfigureHttpClient(configureClient ?? _emptyHttpClientCallback);
 
-        return builder.Add(new HealthCheckRegistration(
-            registrationName,
-            sp =>
-            {
-                var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-                return new UriHealthCheck(uri, () => httpClientFactory.CreateClient(name));
-            },
-            failureStatus,
-            tags,
-            timeout));
+        return builder.Add(
+            new HealthCheckRegistration(
+                registrationName,
+                sp =>
+                {
+                    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+                    return new UriHealthCheck(uri, () => httpClientFactory.CreateClient(name));
+                },
+                failureStatus,
+                tags,
+                timeout
+            )
+        );
     }
-
 }

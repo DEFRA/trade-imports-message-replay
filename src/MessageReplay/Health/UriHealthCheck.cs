@@ -1,19 +1,23 @@
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Health
 {
     [ExcludeFromCodeCoverage]
-    public class UriHealthCheck(Uri uri, Func<HttpClient> httpClientFactory)
-        : IHealthCheck
+    public class UriHealthCheck(Uri uri, Func<HttpClient> httpClientFactory) : IHealthCheck
     {
-        public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+        public async Task<HealthCheckResult> CheckHealthAsync(
+            HealthCheckContext context,
+            CancellationToken cancellationToken = default
+        )
         {
             if (cancellationToken.IsCancellationRequested)
             {
-                return new HealthCheckResult(context.Registration.FailureStatus, description: $"{nameof(UriHealthCheck)} execution is cancelled.");
+                return new HealthCheckResult(
+                    context.Registration.FailureStatus,
+                    description: $"{nameof(UriHealthCheck)} execution is cancelled."
+                );
             }
-
 
             try
             {
@@ -27,13 +31,13 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Health
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    return new HealthCheckResult(context.Registration.FailureStatus,
-                        description:
-                        $"Discover endpoint #{uri} is not responding with code 2xx range, the current status is {response.StatusCode}.");
+                    return new HealthCheckResult(
+                        context.Registration.FailureStatus,
+                        description: $"Discover endpoint #{uri} is not responding with code 2xx range, the current status is {response.StatusCode}."
+                    );
                 }
 
                 return HealthCheckResult.Healthy();
-
             }
             catch (Exception ex)
             {

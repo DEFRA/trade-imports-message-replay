@@ -22,12 +22,9 @@ public static class EndpointRouteBuilderExtensions
     }
 
     [HttpPut]
-    private static IResult Post(
-        [FromBody] ReplayRequest data
-    )
+    private static IResult Post([FromBody] ReplayRequest data)
     {
-        var jobId = BackgroundJob.Enqueue(
-            () => Console.WriteLine($"Fire-and-forget! - {data.Temp}"));
+        var jobId = BackgroundJob.Enqueue(() => Console.WriteLine($"Fire-and-forget! - {data.Temp}"));
 
         return Results.Ok(new ReplayResponse(jobId));
     }

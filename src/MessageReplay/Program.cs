@@ -2,13 +2,19 @@ using System.Text.Json.Serialization;
 using Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Data;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
 using Hangfire.InMemory;
+using Hangfire.Mongo;
+using Hangfire.Mongo.Migration.Strategies;
+using Hangfire.Mongo.Migration.Strategies.Backup;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
+using MongoDB.Driver;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
@@ -68,15 +74,30 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddAuthenticationAuthorization();
     builder.Services.AddBlobStorage(builder.Configuration);
 
-    var storage = new InMemoryStorage();
+    var mongoOptions = builder.Configuration.GetSection(MongoDbOptions.SectionName).Get<MongoDbOptions>();
 
-    builder.Services.AddHangfire(c => c
-        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-        .UseSimpleAssemblyNameTypeSerializer()
-        .UseRecommendedSerializerSettings()
-        .UseSerilogLogProvider()
-        .UseStorage(storage)
-    ).AddHangfireServer();
+    builder
+        .Services.AddHangfire(c =>
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSerilogLogProvider()
+                .UseMongoStorage(
+                    MongoClientSettings.FromConnectionString(mongoOptions?.DatabaseUri),
+                    mongoOptions?.DatabaseName,
+                    new MongoStorageOptions
+                    {
+                        MigrationOptions = new MongoMigrationOptions
+                        {
+                            MigrationStrategy = new MigrateMongoMigrationStrategy(),
+                            BackupStrategy = new CollectionMongoBackupStrategy(),
+                        },
+                        Prefix = "hangfire.mongo",
+                        CheckConnection = true,
+                    }
+                )
+        )
+        .AddHangfireServer();
 }
 
 static WebApplication BuildWebApplication(WebApplicationBuilder builder)
