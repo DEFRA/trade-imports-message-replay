@@ -20,15 +20,6 @@ public class MsalHttpClientFactoryAdapter(IHttpClientFactory httpClientFactory) 
     }
 }
 
-/// <summary>
-/// Takes care of retriving a token via ConfidentialClientApplicationBuilder
-/// which allows us to inject our CDP_HTTPS_PROXY based http client.
-///
-/// It's unclear why this isn't available out of the box!
-/// - IMsalHttpClientFactory isn't used by ClientSecretCredential
-/// - The ClientSecretCredential has an internal constructor accepting MsalConfidentialClient but nothing seems to use it
-/// - MsalConfidentialClient is itself internal
-/// </summary>
 [ExcludeFromCodeCoverage]
 public class ConfidentialClientApplicationTokenCredential : TokenCredential
 {
@@ -48,18 +39,17 @@ public class ConfidentialClientApplicationTokenCredential : TokenCredential
             .Build();
     }
 
-    public override ValueTask<AccessToken> GetTokenAsync(
+    public override async ValueTask<AccessToken> GetTokenAsync(
         TokenRequestContext requestContext,
         CancellationToken cancellationToken
     )
     {
-        var authResult = _app.AcquireTokenForClient(_scopes).ExecuteAsync(cancellationToken).Result;
-        return ValueTask.FromResult(new AccessToken(authResult.AccessToken, authResult.ExpiresOn));
+        var authResult = await _app.AcquireTokenForClient(_scopes).ExecuteAsync(cancellationToken);
+        return new AccessToken(authResult.AccessToken, authResult.ExpiresOn);
     }
 
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {
-        var authResult = _app.AcquireTokenForClient(_scopes).ExecuteAsync(cancellationToken).Result;
-        return new AccessToken(authResult.AccessToken, authResult.ExpiresOn);
+        return GetTokenAsync(requestContext, cancellationToken).GetAwaiter().GetResult();
     }
 }
