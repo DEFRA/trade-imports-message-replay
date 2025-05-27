@@ -11,6 +11,7 @@ public static class ServiceCollectionExtensions
     {
         services
             .AddHealthChecks()
+            .AddUrl(new Uri(configuration.GetValue<string>("GatewayOptions:HealthUri")!), "Gateway Api")
             .AddAzureBlobStorage(
                 sp => sp.GetRequiredService<IBlobServiceClientFactory>().CreateBlobServiceClient(),
                 timeout: TimeSpan.FromSeconds(15),

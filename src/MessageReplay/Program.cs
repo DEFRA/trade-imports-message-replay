@@ -1,10 +1,13 @@
 using System.Text.Json.Serialization;
+using Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
+using Hangfire;
+using Hangfire.InMemory;
 using Microsoft.AspNetCore.Diagnostics;
 using Serilog;
 
@@ -64,6 +67,16 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddDbContext(builder.Configuration);
     builder.Services.AddAuthenticationAuthorization();
     builder.Services.AddBlobStorage(builder.Configuration);
+
+    var storage = new InMemoryStorage();
+
+    builder.Services.AddHangfire(c => c
+        .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+        .UseSimpleAssemblyNameTypeSerializer()
+        .UseRecommendedSerializerSettings()
+        .UseSerilogLogProvider()
+        .UseStorage(storage)
+    ).AddHangfireServer();
 }
 
 static WebApplication BuildWebApplication(WebApplicationBuilder builder)
@@ -74,7 +87,9 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.UseAuthentication();
     app.UseAuthorization();
     app.MapHealth();
+    app.MapReplayEndpoints();
     app.UseStatusCodePages();
+    app.UseHangfireDashboard();
     app.UseExceptionHandler(
         new ExceptionHandlerOptions
         {
