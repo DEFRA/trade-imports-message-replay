@@ -85,7 +85,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseSerilogLogProvider()
-                .UseHangfireStorage(builder.Configuration, integrationTest)
+                .UseHangfireStorage(builder, integrationTest)
         )
         .AddHangfireServer();
 }

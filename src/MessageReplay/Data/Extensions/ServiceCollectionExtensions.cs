@@ -20,7 +20,7 @@ public static class ServiceCollectionExtensions
         ////services.AddHostedService<MongoIndexService>();
 
         services.AddScoped<IDbContext, MongoDbContext>();
-        services.AddSingleton(sp =>
+        services.AddSingleton<IMongoClient>(sp =>
         {
             MongoClientSettings.Extensions.AddAWSAuthentication();
             var options = sp.GetService<IOptions<MongoDbOptions>>();
@@ -40,6 +40,12 @@ public static class ServiceCollectionExtensions
 
             ConventionRegistry.Register(nameof(conventionPack), conventionPack, _ => true);
 
+            return client;
+        });
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetService<IOptions<MongoDbOptions>>();
+            var client = sp.GetRequiredService<IMongoClient>();
             return client.GetDatabase(options?.Value.DatabaseName);
         });
 
