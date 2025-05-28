@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Item>
+    <Tag1>dataB</Tag1>
+    <Tag2>456</Tag2>
+    <Document>
+      <Tag3>dataC</Tag3>
+      <Tag4>777</Tag4>
+    </Document>
+  </Item>
+</Root>

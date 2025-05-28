@@ -1,8 +1,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http.Headers;
+using Defra.TradeImportsMessageReplay.MessageReplay.Configuration;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
-using Defra.TradeImportsMessageReplay.Processor.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.BlobService;

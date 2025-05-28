@@ -1,4 +1,4 @@
-namespace Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
+namespace Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 
 public class ReplayRequest
 {

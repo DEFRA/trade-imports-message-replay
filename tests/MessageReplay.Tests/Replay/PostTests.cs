@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
+using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Tests.Endpoints;
 using Xunit.Abstractions;
 

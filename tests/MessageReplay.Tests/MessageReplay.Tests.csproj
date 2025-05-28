@@ -28,4 +28,12 @@
     <ProjectReference Include="..\..\src\MessageReplay\MessageReplay.csproj" />
     <ProjectReference Include="..\Testing\Testing.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="JsonToSoap\Fixtures\ClearanceRequest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="JsonToSoap\Fixtures\DecisionNotification.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

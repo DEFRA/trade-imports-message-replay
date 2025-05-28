@@ -2,7 +2,7 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
+namespace Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 
 public static class EndpointRouteBuilderExtensions
 {

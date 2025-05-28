@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Item>
+    <Tag1>dataA</Tag1>
+    <Tag2>123</Tag2>
+  </Item>
+  <Item>
+    <Tag1>dataB</Tag1>
+    <Tag2>456</Tag2>
+    <Document>
+      <Tag3>dataC</Tag3>
+      <Tag4>777</Tag4>
+    </Document>
+    <Document>
+      <Tag3>dataD</Tag3>
+      <Tag4>888</Tag4>
+    </Document>
+    <Check>
+      <Tag1>dataD</Tag1>
+      <Tag2>dataE</Tag2>
+    </Check>
+  </Item>
+</Root>
