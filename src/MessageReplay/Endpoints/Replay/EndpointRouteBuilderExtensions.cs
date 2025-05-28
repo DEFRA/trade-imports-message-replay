@@ -1,4 +1,5 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
+using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 using Hangfire;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,9 +23,9 @@ public static class EndpointRouteBuilderExtensions
     }
 
     [HttpPut]
-    private static IResult Post([FromBody] ReplayRequest data)
+    private static IResult Post([FromBody] ReplayRequest data, [FromServices] ReplayJob replayJob)
     {
-        var jobId = BackgroundJob.Enqueue(() => Console.WriteLine($"Fire-and-forget! - {data.Temp}"));
+        var jobId = BackgroundJob.Enqueue(() => replayJob.Run(new JobOptions(10, "")));
 
         return Results.Ok(new ReplayResponse(jobId));
     }

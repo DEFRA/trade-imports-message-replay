@@ -5,11 +5,14 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
+using Defra.TradeImportsMessageReplay.MessageReplay.Jobs.Extensions;
+using Defra.TradeImportsMessageReplay.MessageReplay.Services;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
 using Microsoft.AspNetCore.Diagnostics;
+using Refit;
 using Serilog;
 using ServiceCollectionExtensions = Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions.ServiceCollectionExtensions;
 
@@ -70,7 +73,14 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     // Proxy HTTP Client
     builder.Services.AddTransient<ProxyHttpMessageHandler>();
     builder.Services.AddHttpClient("proxy").ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
+    builder
+        .Services.AddRefitClient<IGatewayApi>()
+        .ConfigureHttpClient(c =>
+            c.BaseAddress = new Uri(builder.Configuration.GetValue<string>("GatewayOptions:BaseUri")!)
+        )
+        .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
     builder.Services.AddDbContext(builder.Configuration);
+    builder.Services.AddJobs();
     builder.Services.AddAuthenticationAuthorization();
     builder.Services.AddBlobStorage(builder.Configuration);
 

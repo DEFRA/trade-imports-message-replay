@@ -31,6 +31,7 @@ public static class ServiceCollectionExtensions
             .ValidateDataAnnotations();
 
         services.AddSingleton<IBlobServiceClientFactory, BlobServiceClientFactory>();
+        services.AddSingleton<IBlobService, BlobService>();
 
         return services;
     }
