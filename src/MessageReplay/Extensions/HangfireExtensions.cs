@@ -4,7 +4,9 @@ using Hangfire;
 using Hangfire.Mongo;
 using Hangfire.Mongo.Migration.Strategies;
 using Hangfire.Mongo.Migration.Strategies.Backup;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 
@@ -23,10 +25,16 @@ public static class HangfireExtensions
         }
         else
         {
-            var client = builder.Services.BuildServiceProvider().GetRequiredService<IMongoClient>();
             var mongoOptions = builder.Configuration.GetSection(MongoDbOptions.SectionName).Get<MongoDbOptions>();
+            var settings = MongoClientSettings.FromConnectionString(mongoOptions?.DatabaseUri);
+
+            settings.ClusterConfigurator = cb =>
+                cb.Subscribe(
+                    new DiagnosticsActivityEventSubscriber(new InstrumentationOptions { CaptureCommandText = true })
+                );
+
             hangfireConfiguration.UseMongoStorage(
-                client,
+                settings,
                 mongoOptions?.DatabaseName,
                 new MongoStorageOptions
                 {

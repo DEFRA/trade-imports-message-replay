@@ -18,9 +18,6 @@ public static class ServiceCollectionExtensions
             .ValidateDataAnnotations();
 
         ////services.AddHostedService<MongoIndexService>();
-
-        BootstrapMongo();
-
         services.AddScoped<IDbContext, MongoDbContext>();
         services.AddSingleton<IMongoClient>(sp =>
         {
@@ -46,7 +43,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    private static void BootstrapMongo()
+    public static void BootstrapMongo()
     {
         try
         {
