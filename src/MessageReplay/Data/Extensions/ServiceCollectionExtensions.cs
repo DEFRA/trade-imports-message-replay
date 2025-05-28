@@ -19,10 +19,11 @@ public static class ServiceCollectionExtensions
 
         ////services.AddHostedService<MongoIndexService>();
 
+        BootstrapMongo();
+
         services.AddScoped<IDbContext, MongoDbContext>();
-        services.AddSingleton(sp =>
+        services.AddSingleton<IMongoClient>(sp =>
         {
-            MongoClientSettings.Extensions.AddAWSAuthentication();
             var options = sp.GetService<IOptions<MongoDbOptions>>();
             var settings = MongoClientSettings.FromConnectionString(options?.Value.DatabaseUri);
 
@@ -32,6 +33,24 @@ public static class ServiceCollectionExtensions
                 );
 
             var client = new MongoClient(settings);
+
+            return client;
+        });
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetService<IOptions<MongoDbOptions>>();
+            var client = sp.GetRequiredService<IMongoClient>();
+            return client.GetDatabase(options?.Value.DatabaseName);
+        });
+
+        return services;
+    }
+
+    private static void BootstrapMongo()
+    {
+        try
+        {
+            MongoClientSettings.Extensions.AddAWSAuthentication();
             var conventionPack = new ConventionPack
             {
                 new CamelCaseElementNameConvention(),
@@ -39,10 +58,10 @@ public static class ServiceCollectionExtensions
             };
 
             ConventionRegistry.Register(nameof(conventionPack), conventionPack, _ => true);
-
-            return client.GetDatabase(options?.Value.DatabaseName);
-        });
-
-        return services;
+        }
+        catch (Exception)
+        {
+            // swallow as its already been registered
+        }
     }
 }

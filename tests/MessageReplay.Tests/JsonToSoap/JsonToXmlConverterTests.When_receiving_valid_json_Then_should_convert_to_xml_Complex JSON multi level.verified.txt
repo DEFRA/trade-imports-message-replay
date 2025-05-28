@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Element1>
+    <Tag1>data1</Tag1>
+    <Tag2>12.3</Tag2>
+  </Element1>
+  <Element2>
+    <Tag3>True</Tag3>
+    <Element3>
+      <Tag4 />
+      <Tag5></Tag5>
+      <Tag6>123</Tag6>
+      <Tag7>abc
+def
+ghi</Tag7>
+    </Element3>
+  </Element2>
+</Root>

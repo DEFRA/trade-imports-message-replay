@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope">
+  <soap:Header>
+    <oas:Security soap:role="system" soap:mustUnderstand="true" xmlns:oas="http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd">
+      <oas:UsernameToken>
+        <oas:Username>ibmtest</oas:Username>
+        <oas:Password>password</oas:Password>
+      </oas:UsernameToken>
+    </oas:Security>
+  </soap:Header>
+  <soap:Body>
+    <DecisionNotification xmlns="http://uk.gov.hmrc.ITSW2.ws">
+      <DecisionNotification xmlns="http://www.hmrc.gov.uk/webservices/itsw/ws/decisionnotification">
+        <ServiceHeader>
+          <SourceSystem>ALVS</SourceSystem>
+          <DestinationSystem>CDS</DestinationSystem>
+          <CorrelationId>external-correlation-id</CorrelationId>
+          <ServiceCallTimestamp>1735689600000</ServiceCallTimestamp>
+        </ServiceHeader>
+        <Header>
+          <EntryReference>MRN123</EntryReference>
+          <EntryVersionNumber>1</EntryVersionNumber>
+          <DecisionNumber>1</DecisionNumber>
+        </Header>
+        <Item>
+          <ItemNumber>1</ItemNumber>
+          <Check>
+            <CheckCode>H218</CheckCode>
+            <DecisionCode>C02</DecisionCode>
+            <DecisionValidUntil>1735689600000</DecisionValidUntil>
+            <DecisionReason>Some decision reason</DecisionReason>
+          </Check>
+        </Item>
+        <Item>
+          <ItemNumber>2</ItemNumber>
+          <Check>
+            <CheckCode>H218</CheckCode>
+            <DecisionCode>C02</DecisionCode>
+            <DecisionValidUntil>1735689600000</DecisionValidUntil>
+            <DecisionReason>Some decision reason 1</DecisionReason>
+            <DecisionReason>Some decision reason 2</DecisionReason>
+          </Check>
+        </Item>
+        <Item>
+          <ItemNumber>3</ItemNumber>
+          <Check>
+            <CheckCode>H218</CheckCode>
+            <DecisionCode>C02</DecisionCode>
+            <DecisionValidUntil>1735689600000</DecisionValidUntil>
+          </Check>
+        </Item>
+        <Item>
+          <ItemNumber>4</ItemNumber>
+          <Check>
+            <CheckCode>H218</CheckCode>
+            <DecisionCode>C02</DecisionCode>
+            <DecisionValidUntil>1735689600000</DecisionValidUntil>
+          </Check>
+        </Item>
+      </DecisionNotification>
+    </DecisionNotification>
+  </soap:Body>
+</soap:Envelope>

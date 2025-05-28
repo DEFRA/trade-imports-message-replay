@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Defra.TradeImportsMessageReplay.Processor.Configuration;
+namespace Defra.TradeImportsMessageReplay.MessageReplay.Configuration;
 
 [ExcludeFromCodeCoverage]
 public class CdpOptions

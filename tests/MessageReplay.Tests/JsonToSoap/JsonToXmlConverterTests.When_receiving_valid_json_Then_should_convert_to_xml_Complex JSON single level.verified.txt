@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Tag1>data1</Tag1>
+  <Tag2>data2</Tag2>
+</Root>

@@ -13,7 +13,7 @@ public static class HangfireExtensions
 {
     public static IGlobalConfiguration UseHangfireStorage(
         this IGlobalConfiguration hangfireConfiguration,
-        IConfiguration configuration,
+        WebApplicationBuilder builder,
         bool integrationTest
     )
     {
@@ -23,9 +23,10 @@ public static class HangfireExtensions
         }
         else
         {
-            var mongoOptions = configuration.GetSection(MongoDbOptions.SectionName).Get<MongoDbOptions>();
+            var client = builder.Services.BuildServiceProvider().GetRequiredService<IMongoClient>();
+            var mongoOptions = builder.Configuration.GetSection(MongoDbOptions.SectionName).Get<MongoDbOptions>();
             hangfireConfiguration.UseMongoStorage(
-                MongoClientSettings.FromConnectionString(mongoOptions?.DatabaseUri),
+                client,
                 mongoOptions?.DatabaseName,
                 new MongoStorageOptions
                 {

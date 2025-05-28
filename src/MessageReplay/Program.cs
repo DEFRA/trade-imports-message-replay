@@ -1,9 +1,9 @@
 using System.Text.Json.Serialization;
-using Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
+using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
@@ -85,7 +85,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
                 .UseSimpleAssemblyNameTypeSerializer()
                 .UseRecommendedSerializerSettings()
                 .UseSerilogLogProvider()
-                .UseHangfireStorage(builder.Configuration, integrationTest)
+                .UseHangfireStorage(builder, integrationTest)
         )
         .AddHangfireServer();
 }

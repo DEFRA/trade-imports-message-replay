@@ -1,3 +1,3 @@
-namespace Defra.TradeImportsMessageReplay.Api.Endpoints.Replay;
+namespace Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 
 public record ReplayResponse(string JobId);
