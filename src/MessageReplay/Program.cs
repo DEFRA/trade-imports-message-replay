@@ -1,7 +1,6 @@
 using System.Text.Json.Serialization;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
-using Defra.TradeImportsMessageReplay.MessageReplay.Data;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
@@ -10,16 +9,12 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
-using Hangfire.InMemory;
-using Hangfire.Mongo;
-using Hangfire.Mongo.Migration.Strategies;
-using Hangfire.Mongo.Migration.Strategies.Backup;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
-using MongoDB.Driver;
 using Serilog;
+using ServiceCollectionExtensions = Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions.ServiceCollectionExtensions;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
+ServiceCollectionExtensions.BootstrapMongo();
 
 try
 {

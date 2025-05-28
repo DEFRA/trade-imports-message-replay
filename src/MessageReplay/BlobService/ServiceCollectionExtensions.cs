@@ -1,9 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Net;
 using System.Net.Http.Headers;
-using Defra.TradeImportsMessageReplay.MessageReplay.Configuration;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
-using Microsoft.Extensions.Options;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 
@@ -15,7 +12,7 @@ public static class ServiceCollectionExtensions
         // The azure client has it's own way of proxying :|
         services
             .AddHttpClient("Msal")
-            .ConfigurePrimaryHttpMessageHandler(ConfigurePrimaryHttpMessageHandler)
+            .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>()
             .ConfigureHttpClient(httpClient =>
             {
                 // Default MSAL settings:
@@ -36,12 +33,5 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IBlobServiceClientFactory, BlobServiceClientFactory>();
 
         return services;
-    }
-
-    public static HttpClientHandler ConfigurePrimaryHttpMessageHandler(IServiceProvider sp)
-    {
-        var options = sp.GetRequiredService<IOptions<CdpOptions>>();
-        var proxy = sp.GetRequiredService<IWebProxy>();
-        return new HttpClientHandler { Proxy = proxy, UseProxy = options.Value.CdpHttpsProxy != null };
     }
 }
