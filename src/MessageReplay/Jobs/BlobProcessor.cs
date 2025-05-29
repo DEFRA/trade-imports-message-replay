@@ -9,17 +9,10 @@ public abstract class BlobProcessor(string filterValue, ILogger logger) : IBlobP
         return item.Name.Contains($"/{filterValue}/", StringComparison.CurrentCultureIgnoreCase);
     }
 
-    public async Task Process(BlobItem item)
+    public Task Process(BlobItem item)
     {
         logger.LogInformation("Processing blob item: {Blob}", item.Name);
-        try
-        {
-            await ProcessBlobItem(item);
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Failed to process blob item: {Blob}", item.Name);
-        }
+        return ProcessBlobItem(item);
     }
 
     protected abstract Task ProcessBlobItem(BlobItem item);

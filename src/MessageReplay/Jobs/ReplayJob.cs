@@ -13,7 +13,12 @@ public class ReplayJob(
 )
 {
     [JobDisplayName("Replaying folder - {1}")]
-    public async Task Run(int maxConcurrency, string prefix, PerformContext context, CancellationToken cancellationToken)
+    public async Task Run(
+        int maxConcurrency,
+        string prefix,
+        PerformContext context,
+        CancellationToken cancellationToken
+    )
     {
         var files = blobService.GetResourcesAsync(prefix, CancellationToken.None);
 
