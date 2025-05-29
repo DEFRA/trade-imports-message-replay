@@ -1,5 +1,6 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
+using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.InMemory;
@@ -23,7 +24,7 @@ public class ReplayJobTests
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
-        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient);
+        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient, new TraceContextAccessor());
         var storage = new InMemoryStorage();
         await sut.Run(
             "Test",
@@ -57,7 +58,7 @@ public class ReplayJobTests
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
-        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient);
+        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient, new TraceContextAccessor());
         var storage = new InMemoryStorage();
         await sut.ProcessBlob(
             "test",
