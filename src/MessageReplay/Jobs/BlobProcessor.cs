@@ -11,6 +11,7 @@ public abstract class BlobProcessor(string filterValue, ILogger logger) : IBlobP
 
     public async Task Process(BlobItem item)
     {
+        logger.LogInformation("Processing blob item: {Blob}", item.Name);
         try
         {
             await ProcessBlobItem(item);

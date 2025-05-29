@@ -1,5 +1,8 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
+using Hangfire;
+using Hangfire.InMemory;
+using Hangfire.Server;
 using NSubstitute;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Tests.Jobs;
@@ -11,6 +14,7 @@ public class ReplayJobTests
     {
         var blobs = new List<string> { "Test blob 1" };
         var blobService = Substitute.For<IBlobService>();
+        var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
         blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
         blobService
             .GetResource("Test blob 1", CancellationToken.None)
@@ -20,9 +24,19 @@ public class ReplayJobTests
 
         blobProcessor.CanProcess(Arg.Any<BlobItem>()).Returns(true);
 
-        var sut = new ReplayJob(blobService, [blobProcessor]);
-        await sut.Run(new JobOptions(1, "Test"));
+        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient);
+        var storage = new InMemoryStorage();
+        await sut.Run(
+            1,
+            "Test",
+            new PerformContext(
+                storage,
+                storage.GetConnection(),
+                new BackgroundJob("test", null, DateTime.Now),
+                new JobCancellationToken(false)
+            )
+        );
 
-        await blobProcessor.Received(1).Process(Arg.Any<BlobItem>());
+        backgroundJobClient.ReceivedWithAnyArgs(1).Create(default, default);
     }
 }

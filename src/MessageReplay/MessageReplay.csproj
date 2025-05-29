@@ -21,6 +21,7 @@
     <PackageReference Include="Defra.TradeImportsDataApi.Domain" Version="0.17.0" />
     <PackageReference Include="Elastic.CommonSchema.Serilog" Version="8.12.3" />
     <PackageReference Include="Elastic.Serilog.Enrichers.Web" Version="8.12.3" />
+    <PackageReference Include="Hangfire.Console.Extensions.Serilog" Version="2.0.0" />
     <PackageReference Include="Hangfire.InMemory" Version="1.0.0" />
     <PackageReference Include="Hangfire.AspNetCore" Version="1.8.20" />
     <PackageReference Include="Hangfire.Mongo" Version="1.11.6" />

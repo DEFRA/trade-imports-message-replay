@@ -25,7 +25,7 @@ public static class EndpointRouteBuilderExtensions
     [HttpPut]
     private static IResult Post([FromBody] ReplayRequest data, [FromServices] ReplayJob replayJob)
     {
-        var jobId = BackgroundJob.Enqueue(() => replayJob.Run(new JobOptions(10, "")));
+        var jobId = BackgroundJob.Enqueue(() => replayJob.Run(data.Concurrency, data.SourceFolder, null!));
 
         return Results.Ok(new ReplayResponse(jobId));
     }

@@ -1,9 +1,11 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Azure.Storage.Blobs;
 using Microsoft.Extensions.Options;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 
+[ExcludeFromCodeCoverage(Justification = "Will be covered by integration tests")]
 public class BlobService(IBlobServiceClientFactory blobServiceClientFactory, IOptions<BlobServiceOptions> options)
     : IBlobService
 {

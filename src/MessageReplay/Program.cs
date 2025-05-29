@@ -11,6 +11,8 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
+using Hangfire.Console;
+using Hangfire.Console.Extensions;
 using Microsoft.AspNetCore.Diagnostics;
 using Refit;
 using Serilog;
@@ -85,14 +87,17 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddBlobStorage(builder.Configuration);
 
     builder
-        .Services.AddHangfire(c =>
-            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSerilogLogProvider()
-                .UseHangfireStorage(builder, integrationTest)
+        .Services.AddHangfire(
+            (sp, c) =>
+                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                    .UseSimpleAssemblyNameTypeSerializer()
+                    .UseRecommendedSerializerSettings()
+                    .UseSerilogLogProvider()
+                    .UseConsole()
+                    .UseHangfireStorage(builder, integrationTest)
         )
-        .AddHangfireServer();
+        .AddHangfireServer()
+        .AddHangfireConsoleExtensions();
 }
 
 static WebApplication BuildWebApplication(WebApplicationBuilder builder)

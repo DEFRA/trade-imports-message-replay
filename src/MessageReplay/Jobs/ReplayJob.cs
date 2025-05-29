@@ -1,54 +1,43 @@
-using System.Threading.Channels;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Hangfire;
+using Hangfire.Common;
+using Hangfire.Server;
+using Hangfire.States;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 
-public record JobOptions(int MaxConcurrency, string Prefix);
-
-public class ReplayJob(IBlobService blobService, IEnumerable<IBlobProcessor> blobProcessors)
+public class ReplayJob(
+    IBlobService blobService,
+    IEnumerable<IBlobProcessor> blobProcessors,
+    IBackgroundJobClient jobManager
+)
 {
-    private Channel<BlobItem> _channel = null!;
-
-    public async Task Run(JobOptions options)
+    public async Task Run(int maxConcurrency, string prefix, PerformContext context)
     {
-        _channel = Channel.CreateBounded<BlobItem>(options.MaxConcurrency);
-        var consumerTask = StartConsumer();
+        var files = blobService.GetResourcesAsync(prefix, CancellationToken.None);
 
-        var producerTask = StartProducer(options.Prefix);
-
-        await Task.WhenAll(producerTask, consumerTask);
-    }
-
-    private Task StartProducer(string prefix)
-    {
-        return Task.Run(async () =>
-        {
-            var files = blobService.GetResourcesAsync(prefix, CancellationToken.None);
-
-            await Parallel.ForEachAsync(
-                files,
-                async (file, token) =>
-                {
-                    var blobItem = await blobService.GetResource(file, token);
-                    await _channel.Writer.WriteAsync(blobItem, token);
-                }
-            );
-
-            _channel.Writer.Complete();
-        });
-    }
-
-    private Task StartConsumer()
-    {
-        return Task.Run(async () =>
-        {
-            await foreach (var item in _channel.Reader.ReadAllAsync())
+        await Parallel.ForEachAsync(
+            files,
+            new ParallelOptions() { MaxDegreeOfParallelism = maxConcurrency },
+            (file, token) =>
             {
-                foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(item)))
-                {
-                    await blobProcessor.Process(item);
-                }
+                var state = new AwaitingState(
+                    context.BackgroundJob.Id,
+                    new EnqueuedState(),
+                    JobContinuationOptions.OnlyOnSucceededState
+                );
+                jobManager.Create(Job.FromExpression(() => ProcessBlob(file, CancellationToken.None)), state);
+                return ValueTask.CompletedTask;
             }
-        });
+        );
+    }
+
+    public async Task ProcessBlob(string file, CancellationToken token)
+    {
+        var blobItem = await blobService.GetResource(file, token);
+        foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(blobItem)))
+        {
+            await blobProcessor.Process(blobItem);
+        }
     }
 }
