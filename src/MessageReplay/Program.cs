@@ -1,3 +1,4 @@
+using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
@@ -71,7 +72,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddProblemDetails();
     builder.Services.AddHealthChecks();
     builder.Services.AddHealth(builder.Configuration, integrationTest);
-    builder.Services.AddHttpClient();
+    builder.Services.AddHttpClient().AddHeaderPropagation();
     // Proxy HTTP Client
     builder.Services.AddTransient<ProxyHttpMessageHandler>();
     builder.Services.AddHttpClient("proxy").ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
@@ -81,6 +82,18 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
             c.BaseAddress = new Uri(builder.Configuration.GetValue<string>("GatewayOptions:BaseUri")!)
         )
         .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
+
+    builder
+        .Services.AddRefitClient<IImportProcessorApi>()
+        .ConfigureHttpClient(c =>
+        {
+            c.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ImportProcessorOptions:BaseUri")!);
+            c.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(
+                builder.Configuration.GetValue<string>("ImportProcessorOptions:Auth")!
+            );
+        })
+        .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
+
     builder.Services.AddDbContext(builder.Configuration);
     builder.Services.AddJobs();
     builder.Services.AddAuthenticationAuthorization();

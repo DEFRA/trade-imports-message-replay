@@ -1,4 +1,5 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -9,7 +10,8 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 public class ReplayJob(
     IBlobService blobService,
     IEnumerable<IBlobProcessor> blobProcessors,
-    IBackgroundJobClient jobManager
+    IBackgroundJobClient jobManager,
+    ITraceContextAccessor traceContextAccessor
 )
 {
     [JobDisplayName("Replaying folder - {0}")]
@@ -37,6 +39,7 @@ public class ReplayJob(
     [JobDisplayName("Replaying blob - {0}")]
     public async Task ProcessBlob(string file, PerformContext context, CancellationToken token)
     {
+        traceContextAccessor.Context = new TraceContext() { TraceId = Guid.NewGuid().ToString("N") };
         var blobItem = await blobService.GetResource(file, token);
         foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
         {

@@ -8,6 +8,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IBlobProcessor, ClearanceRequestBlobProcessor>();
         services.AddTransient<IBlobProcessor, DecisionBlobProcessor>();
         services.AddTransient<IBlobProcessor, FinalisationBlobProcessor>();
+        services.AddTransient<IBlobProcessor, ImportPreNotificationBlobProcessor>();
 
         return services;
     }

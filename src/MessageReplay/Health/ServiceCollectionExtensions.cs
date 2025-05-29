@@ -32,6 +32,11 @@ public static class ServiceCollectionExtensions
                 new Uri(configuration.GetValue<string>("GatewayOptions:HealthUri")!),
                 "Gateway Api"
             );
+
+            healthChecksBuilder.AddUrl(
+                new Uri(configuration.GetValue<string>("ImportProcessorOptions:HealthUri")!),
+                "Imports Processor"
+            );
         }
 
         return services;
