@@ -16,9 +16,6 @@ public class ReplayJobTests
         var blobService = Substitute.For<IBlobService>();
         var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
         blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
-        blobService
-            .GetResource("Test blob 1", CancellationToken.None)
-            .Returns(new BlobItem() { Name = "Test blob 1", Content = BinaryData.FromString("Test blob 1") });
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
 
@@ -34,9 +31,31 @@ public class ReplayJobTests
                 storage.GetConnection(),
                 new BackgroundJob("test", null, DateTime.Now),
                 new JobCancellationToken(false)
-            )
+            ),
+            CancellationToken.None
         );
 
         backgroundJobClient.ReceivedWithAnyArgs(1).Create(default, default);
+    }
+
+    [Fact]
+    public async Task When_replay_blob_run_blob_should_be_processed()
+    {
+        var blobService = Substitute.For<IBlobService>();
+        var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
+
+        blobService
+            .GetResource("Test blob 1", CancellationToken.None)
+            .Returns(new BlobItem() { Name = "Test blob 1", Content = BinaryData.FromString("Test blob 1") });
+
+        var blobProcessor = Substitute.For<IBlobProcessor>();
+
+        blobProcessor.CanProcess(Arg.Any<BlobItem>()).Returns(true);
+
+        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient);
+
+        await sut.ProcessBlob("test", CancellationToken.None);
+
+        await blobProcessor.Received(1).Process(Arg.Any<BlobItem>());
     }
 }
