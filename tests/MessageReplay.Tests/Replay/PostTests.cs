@@ -18,7 +18,7 @@ public class PostTests(MessageReplayWebApplicationFactory factory, ITestOutputHe
         var response = await client.PostAsync(
             "/replay",
             new StringContent(
-                JsonSerializer.Serialize(new ReplayRequest()),
+                JsonSerializer.Serialize(new ReplayRequest("Temp", ResourceType.ClearanceRequest)),
                 new MediaTypeHeaderValue("application/json")
             )
         );
@@ -36,7 +36,7 @@ public class PostTests(MessageReplayWebApplicationFactory factory, ITestOutputHe
         var response = await client.PostAsync(
             "/replay",
             new StringContent(
-                JsonSerializer.Serialize(new ReplayRequest()),
+                JsonSerializer.Serialize(new ReplayRequest("Temp", ResourceType.ClearanceRequest)),
                 new MediaTypeHeaderValue("application/json")
             )
         );
@@ -52,7 +52,7 @@ public class PostTests(MessageReplayWebApplicationFactory factory, ITestOutputHe
         var response = await client.PostAsync(
             "/replay",
             new StringContent(
-                JsonSerializer.Serialize(new ReplayRequest()),
+                JsonSerializer.Serialize(new ReplayRequest("Temp", ResourceType.ClearanceRequest)),
                 new MediaTypeHeaderValue("application/json")
             )
         );

@@ -1,6 +1,12 @@
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 
-public class ReplayRequest
+public enum ResourceType
 {
-    public string Temp { get; set; } = null!;
+    ImportPreNotification,
+    ClearanceRequest,
+    Decision,
+    Finalisation,
+    Gmr,
 }
+
+public record ReplayRequest(string SourceFolder, ResourceType ResourceType);
