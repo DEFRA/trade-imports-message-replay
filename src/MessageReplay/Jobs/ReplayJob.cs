@@ -12,30 +12,23 @@ public class ReplayJob(
     IBackgroundJobClient jobManager
 )
 {
-    [JobDisplayName("Replaying folder - {1}")]
-    public async Task Run(
-        int maxConcurrency,
-        string prefix,
-        PerformContext context,
-        CancellationToken cancellationToken
-    )
+    [JobDisplayName("Replaying folder - {0}")]
+    public async Task Run(string prefix, PerformContext context, CancellationToken cancellationToken)
     {
-        var files = blobService.GetResourcesAsync(prefix, CancellationToken.None);
+        var files = blobService.GetResourcesAsync(prefix, cancellationToken);
 
-        await Parallel.ForEachAsync(
-            files,
-            new ParallelOptions() { MaxDegreeOfParallelism = maxConcurrency, CancellationToken = cancellationToken },
-            (file, token) =>
-            {
-                var state = new AwaitingState(
-                    context.BackgroundJob.Id,
-                    new EnqueuedState(),
-                    JobContinuationOptions.OnlyOnSucceededState
-                );
-                jobManager.Create(Job.FromExpression(() => ProcessBlob(file, token)), state);
-                return ValueTask.CompletedTask;
-            }
-        );
+        await foreach (var file in files)
+        {
+            var state = new AwaitingState(
+                context.BackgroundJob.Id,
+                new EnqueuedState(),
+                JobContinuationOptions.OnlyOnSucceededState
+            );
+            jobManager.Create(
+                Job.FromExpression(() => ProcessBlob(file, cancellationToken), context.BackgroundJob.Job.Queue),
+                state
+            );
+        }
     }
 
     [JobDisplayName("Replaying blob - {0}")]

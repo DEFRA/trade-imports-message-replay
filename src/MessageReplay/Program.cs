@@ -87,16 +87,25 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddBlobStorage(builder.Configuration);
 
     builder
-        .Services.AddHangfire(
-            (sp, c) =>
-                c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                    .UseSimpleAssemblyNameTypeSerializer()
-                    .UseRecommendedSerializerSettings()
-                    .UseSerilogLogProvider()
-                    .UseConsole()
-                    .UseHangfireStorage(builder, integrationTest)
+        .Services.AddHangfire(c =>
+            c.SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseSerilogLogProvider()
+                .UseConsole()
+                .UseHangfireStorage(builder, integrationTest)
         )
-        .AddHangfireServer()
+        .AddHangfireServer(options =>
+        {
+            options.Queues =
+            [
+                ResourceType.ImportPreNotification.ToString().ToLower(),
+                ResourceType.ClearanceRequest.ToString().ToLower(),
+                ResourceType.Decision.ToString().ToLower(),
+                ResourceType.Finalisation.ToString().ToLower(),
+                ResourceType.Gmr.ToString().ToLower(),
+            ];
+        })
         .AddHangfireConsoleExtensions();
 }
 

@@ -1,6 +1,7 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 using Hangfire;
+using Hangfire.Common;
 using Hangfire.InMemory;
 using Hangfire.Server;
 using NSubstitute;
@@ -24,12 +25,15 @@ public class ReplayJobTests
         var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient);
         var storage = new InMemoryStorage();
         await sut.Run(
-            1,
             "Test",
             new PerformContext(
                 storage,
                 storage.GetConnection(),
-                new BackgroundJob("test", null, DateTime.Now),
+                new BackgroundJob(
+                    "test",
+                    new Job(typeof(ReplayJobTests).GetMethod(nameof(When_job_run_blobs_should_be_processed))),
+                    DateTime.Now
+                ),
                 new JobCancellationToken(false)
             ),
             CancellationToken.None
