@@ -1,4 +1,5 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 using Defra.TradeImportsMessageReplay.MessageReplay.Models.ClearanceDecision;
 using Defra.TradeImportsMessageReplay.MessageReplay.Services;
@@ -100,14 +101,17 @@ public class DecisionBlobProcessorTests
     }
 
     [Theory]
-    [InlineData("ROOT/DECISION/2025", true)]
-    [InlineData("ROOT/FINAL/2025", false)]
-    public void When_receiving_decision_request_can_process_depends_on_name(string name, bool expectedResult)
+    [InlineData(ResourceType.Decision, true)]
+    [InlineData(ResourceType.Gmr, false)]
+    public void When_receiving_decision_request_can_process_depends_on_name(
+        ResourceType resourceType,
+        bool expectedResult
+    )
     {
         var gatewayApi = Substitute.For<IGatewayApi>();
 
         var sut = new DecisionBlobProcessor(gatewayApi, NullLogger<DecisionBlobProcessor>.Instance);
-        var result = sut.CanProcess(new BlobItem() { Name = name, Content = BinaryData.FromString("") });
+        var result = sut.CanProcess(resourceType.ToString().ToLower());
 
         result.Should().Be(expectedResult);
     }

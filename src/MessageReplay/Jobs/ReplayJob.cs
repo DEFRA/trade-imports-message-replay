@@ -25,17 +25,20 @@ public class ReplayJob(
                 JobContinuationOptions.OnlyOnSucceededState
             );
             jobManager.Create(
-                Job.FromExpression(() => ProcessBlob(file, cancellationToken), context.BackgroundJob.Job.Queue),
+                Job.FromExpression(
+                    () => ProcessBlob(file, null!, CancellationToken.None),
+                    context.BackgroundJob.Job.Queue
+                ),
                 state
             );
         }
     }
 
     [JobDisplayName("Replaying blob - {0}")]
-    public async Task ProcessBlob(string file, CancellationToken token)
+    public async Task ProcessBlob(string file, PerformContext context, CancellationToken token)
     {
         var blobItem = await blobService.GetResource(file, token);
-        foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(blobItem)))
+        foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
         {
             await blobProcessor.Process(blobItem);
         }

@@ -1,4 +1,5 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 using Defra.TradeImportsMessageReplay.MessageReplay.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,14 +28,17 @@ public class FinalisationBlobProcessorTests
     }
 
     [Theory]
-    [InlineData("ROOT/FINALISATION/2025", true)]
-    [InlineData("ROOT/FINAL/2025", false)]
-    public void When_receiving_finalisation_request_can_process_depends_on_name(string name, bool expectedResult)
+    [InlineData(ResourceType.Finalisation, true)]
+    [InlineData(ResourceType.Decision, false)]
+    public void When_receiving_finalisation_request_can_process_depends_on_name(
+        ResourceType resourceType,
+        bool expectedResult
+    )
     {
         var gatewayApi = Substitute.For<IGatewayApi>();
 
         var sut = new FinalisationBlobProcessor(gatewayApi, NullLogger<FinalisationBlobProcessor>.Instance);
-        var result = sut.CanProcess(new BlobItem() { Name = name, Content = BinaryData.FromString("") });
+        var result = sut.CanProcess(resourceType.ToString().ToLower());
 
         result.Should().Be(expectedResult);
     }

@@ -4,7 +4,7 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Jobs
 {
     public interface IBlobProcessor
     {
-        bool CanProcess(BlobItem item);
+        bool CanProcess(string queue);
 
         Task Process(BlobItem item);
     }

@@ -4,6 +4,7 @@ using Hangfire;
 using Hangfire.Common;
 using Hangfire.InMemory;
 using Hangfire.Server;
+using Microsoft.Identity.Client.Extensions.Msal;
 using NSubstitute;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Tests.Jobs;
@@ -20,7 +21,7 @@ public class ReplayJobTests
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
 
-        blobProcessor.CanProcess(Arg.Any<BlobItem>()).Returns(true);
+        blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
         var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient);
         var storage = new InMemoryStorage();
@@ -54,11 +55,24 @@ public class ReplayJobTests
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
 
-        blobProcessor.CanProcess(Arg.Any<BlobItem>()).Returns(true);
+        blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
         var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient);
-
-        await sut.ProcessBlob("test", CancellationToken.None);
+        var storage = new InMemoryStorage();
+        await sut.ProcessBlob(
+            "test",
+            new PerformContext(
+                storage,
+                storage.GetConnection(),
+                new BackgroundJob(
+                    "test",
+                    new Job(typeof(ReplayJobTests).GetMethod(nameof(When_job_run_blobs_should_be_processed))),
+                    DateTime.Now
+                ),
+                new JobCancellationToken(false)
+            ),
+            CancellationToken.None
+        );
 
         await blobProcessor.Received(1).Process(Arg.Any<BlobItem>());
     }

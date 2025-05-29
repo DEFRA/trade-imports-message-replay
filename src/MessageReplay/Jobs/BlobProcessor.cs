@@ -1,12 +1,13 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 
-public abstract class BlobProcessor(string filterValue, ILogger logger) : IBlobProcessor
+public abstract class BlobProcessor(ResourceType resourceType, ILogger logger) : IBlobProcessor
 {
-    public bool CanProcess(BlobItem item)
+    public bool CanProcess(string queue)
     {
-        return item.Name.Contains($"/{filterValue}/", StringComparison.CurrentCultureIgnoreCase);
+        return queue == resourceType.ToString().ToLower();
     }
 
     public Task Process(BlobItem item)
