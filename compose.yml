@@ -58,6 +58,7 @@ services:
       ENVIRONMENT: local
       PORT: 8080
       GatewayOptions__HealthUri: http://wiremock/health
+      ImportProcessorOptions__HealthUri: http://wiremock/health
       Mongo__DatabaseUri: mongodb://mongodb:27017/?directConnection=true
       BlobServiceOptions__CredentialType: StorageSharedKeyCredential
       BlobServiceOptions__AzureClientId: devstoreaccount1
