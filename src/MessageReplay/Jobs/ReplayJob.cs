@@ -11,7 +11,8 @@ public class ReplayJob(
     IBlobService blobService,
     IEnumerable<IBlobProcessor> blobProcessors,
     IBackgroundJobClient jobManager,
-    ITraceContextAccessor traceContextAccessor
+    ITraceContextAccessor traceContextAccessor,
+    ILogger<ReplayJob> logger
 )
 {
     [JobDisplayName("Replaying folder - {0}")]
@@ -28,7 +29,7 @@ public class ReplayJob(
             );
             jobManager.Create(
                 Job.FromExpression(
-                    () => ProcessBlob(file, null!, CancellationToken.None),
+                    () => ProcessBlob(file, Guid.NewGuid().ToString("N"), null!, CancellationToken.None),
                     context.BackgroundJob.Job.Queue
                 ),
                 state
@@ -37,9 +38,10 @@ public class ReplayJob(
     }
 
     [JobDisplayName("Replaying blob - {0}")]
-    public async Task ProcessBlob(string file, PerformContext context, CancellationToken token)
+    public async Task ProcessBlob(string file, string traceId, PerformContext context, CancellationToken token)
     {
-        traceContextAccessor.Context = new TraceContext() { TraceId = Guid.NewGuid().ToString("N") };
+        traceContextAccessor.Context = new TraceContext() { TraceId = traceId };
+        logger.LogInformation("TraceId = {TraceId}", traceId);
         var blobItem = await blobService.GetResource(file, token);
         foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
         {
