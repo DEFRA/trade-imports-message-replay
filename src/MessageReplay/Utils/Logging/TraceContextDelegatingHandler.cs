@@ -1,7 +1,9 @@
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Options;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 
+[ExcludeFromCodeCoverage]
 public class TraceContextDelegatingHandler(
     IOptions<TraceHeader> traceHeader,
     ITraceContextAccessor traceContextAccessor
