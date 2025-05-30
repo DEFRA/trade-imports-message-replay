@@ -75,13 +75,15 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddHttpClient().AddHeaderPropagation();
     // Proxy HTTP Client
     builder.Services.AddTransient<ProxyHttpMessageHandler>();
+    builder.Services.AddTransient<TraceContextDelegatingHandler>();
     builder.Services.AddHttpClient("proxy").ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
     builder
         .Services.AddRefitClient<IGatewayApi>()
         .ConfigureHttpClient(c =>
             c.BaseAddress = new Uri(builder.Configuration.GetValue<string>("GatewayOptions:BaseUri")!)
         )
-        .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
+        .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>()
+        .AddHttpMessageHandler<TraceContextDelegatingHandler>();
 
     builder
         .Services.AddRefitClient<IImportProcessorApi>()
@@ -89,10 +91,11 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
         {
             c.BaseAddress = new Uri(builder.Configuration.GetValue<string>("ImportProcessorOptions:BaseUri")!);
             c.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(
-                builder.Configuration.GetValue<string>("ImportProcessorOptions:Auth")!
+                $"Basic {builder.Configuration.GetValue<string>("ImportProcessorOptions:Auth")}"
             );
         })
-        .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
+        .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>()
+        .AddHttpMessageHandler<TraceContextDelegatingHandler>();
 
     builder.Services.AddDbContext(builder.Configuration);
     builder.Services.AddJobs();

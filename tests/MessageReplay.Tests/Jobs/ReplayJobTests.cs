@@ -5,6 +5,7 @@ using Hangfire;
 using Hangfire.Common;
 using Hangfire.InMemory;
 using Hangfire.Server;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Identity.Client.Extensions.Msal;
 using NSubstitute;
 
@@ -24,7 +25,13 @@ public class ReplayJobTests
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
-        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient, new TraceContextAccessor());
+        var sut = new ReplayJob(
+            blobService,
+            [blobProcessor],
+            backgroundJobClient,
+            new TraceContextAccessor(),
+            NullLogger<ReplayJob>.Instance
+        );
         var storage = new InMemoryStorage();
         await sut.Run(
             "Test",
@@ -58,10 +65,17 @@ public class ReplayJobTests
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
-        var sut = new ReplayJob(blobService, [blobProcessor], backgroundJobClient, new TraceContextAccessor());
+        var sut = new ReplayJob(
+            blobService,
+            [blobProcessor],
+            backgroundJobClient,
+            new TraceContextAccessor(),
+            NullLogger<ReplayJob>.Instance
+        );
         var storage = new InMemoryStorage();
         await sut.ProcessBlob(
             "test",
+            Guid.NewGuid().ToString("N"),
             new PerformContext(
                 storage,
                 storage.GetConnection(),
