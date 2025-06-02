@@ -22,19 +22,12 @@ public class ReplayJob(
 
         await foreach (var file in files)
         {
-            // swallow exception but add a specific continuation job, so it can be tracked and retried
-            var state = new AwaitingState(
-                context.BackgroundJob.Id,
-                new EnqueuedState(),
-                JobContinuationOptions.OnlyOnSucceededState
-            );
-
             jobManager.Create(
                 Job.FromExpression(
                     () => ProcessBlob(file, Guid.NewGuid().ToString("N"), null!, CancellationToken.None),
                     context.BackgroundJob.Job.Queue
                 ),
-                state
+                new EnqueuedState(context.BackgroundJob.Job.Queue)
             );
         }
     }
