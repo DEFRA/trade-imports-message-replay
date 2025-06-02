@@ -49,45 +49,6 @@ public class ReplayJobTests
             CancellationToken.None
         );
 
-        await blobProcessor.Received(1).Process(Arg.Any<BlobItem>());
-    }
-
-    [Fact]
-    public async Task When_job_run_fails_blobs_should_be_processed()
-    {
-        var blobs = new List<string> { "Test blob 1" };
-        var blobService = Substitute.For<IBlobService>();
-        var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
-        blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
-
-        var blobProcessor = Substitute.For<IBlobProcessor>();
-        blobProcessor.Process(Arg.Any<BlobItem>()).ThrowsAsync(new Exception());
-
-        blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
-
-        var sut = new ReplayJob(
-            blobService,
-            [blobProcessor],
-            backgroundJobClient,
-            new TraceContextAccessor(),
-            NullLogger<ReplayJob>.Instance
-        );
-        var storage = new InMemoryStorage();
-        await sut.Run(
-            "Test",
-            new PerformContext(
-                storage,
-                storage.GetConnection(),
-                new BackgroundJob(
-                    "test",
-                    new Job(typeof(ReplayJobTests).GetMethod(nameof(When_job_run_blobs_should_be_processed))),
-                    DateTime.Now
-                ),
-                new JobCancellationToken(false)
-            ),
-            CancellationToken.None
-        );
-
         backgroundJobClient.ReceivedWithAnyArgs(1).Create(default, default);
     }
 

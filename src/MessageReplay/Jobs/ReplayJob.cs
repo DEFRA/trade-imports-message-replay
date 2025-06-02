@@ -20,30 +20,7 @@ public class ReplayJob(
     {
         var files = blobService.GetResourcesAsync(prefix, cancellationToken);
 
-        await Parallel.ForEachAsync(
-            files,
-            new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = 8 },
-            async (file, token) =>
-            {
-                await Task.Run(() => ProcessBlob(file, Guid.NewGuid().ToString("N"), context, token), token);
-            }
-        );
-    }
-
-    [JobDisplayName("Replaying blob - {0}")]
-    public async Task ProcessBlob(string file, string traceId, PerformContext context, CancellationToken token)
-    {
-        try
-        {
-            traceContextAccessor.Context = new TraceContext() { TraceId = traceId };
-            logger.LogInformation("TraceId = {TraceId}", traceId);
-            var blobItem = await blobService.GetResource(file, token);
-            foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
-            {
-                await blobProcessor.Process(blobItem);
-            }
-        }
-        catch (Exception)
+        await foreach (var file in files)
         {
             // swallow exception but add a specific continuation job, so it can be tracked and retried
             var state = new AwaitingState(
@@ -54,11 +31,23 @@ public class ReplayJob(
 
             jobManager.Create(
                 Job.FromExpression(
-                    () => ProcessBlob(file, traceId, null!, CancellationToken.None),
+                    () => ProcessBlob(file, Guid.NewGuid().ToString("N"), null!, CancellationToken.None),
                     context.BackgroundJob.Job.Queue
                 ),
                 state
             );
+        }
+    }
+
+    [JobDisplayName("Replaying blob - {0}")]
+    public async Task ProcessBlob(string file, string traceId, PerformContext context, CancellationToken token)
+    {
+        traceContextAccessor.Context = new TraceContext() { TraceId = traceId };
+        logger.LogInformation("TraceId = {TraceId}", traceId);
+        var blobItem = await blobService.GetResource(file, token);
+        foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
+        {
+            await blobProcessor.Process(blobItem);
         }
     }
 }
