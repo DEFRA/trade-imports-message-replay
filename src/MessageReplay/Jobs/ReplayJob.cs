@@ -20,12 +20,14 @@ public class ReplayJob(
     {
         var files = blobService.GetResourcesAsync(prefix, cancellationToken);
 
-        await Parallel.ForEachAsync(files,
+        await Parallel.ForEachAsync(
+            files,
             new ParallelOptions() { CancellationToken = cancellationToken, MaxDegreeOfParallelism = 8 },
             async (file, token) =>
             {
-               await Task.Run(() => ProcessBlob(file, Guid.NewGuid().ToString("N"), context, token), token);
-            });
+                await Task.Run(() => ProcessBlob(file, Guid.NewGuid().ToString("N"), context, token), token);
+            }
+        );
     }
 
     [JobDisplayName("Replaying blob - {0}")]
