@@ -1,4 +1,6 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Data;
+using Defra.TradeImportsMessageReplay.MessageReplay.Data.Entities;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
@@ -6,9 +8,7 @@ using Hangfire.Common;
 using Hangfire.InMemory;
 using Hangfire.Server;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Identity.Client.Extensions.Msal;
 using NSubstitute;
-using NSubstitute.ExceptionExtensions;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Tests.Jobs;
 
@@ -17,17 +17,73 @@ public class ReplayJobTests
     [Fact]
     public async Task When_job_run_blobs_should_be_processed()
     {
-        var blobs = new List<string> { "Test blob 1" };
+        var blobs = new List<BlobMetadata> { new("Test blob 1", DateTimeOffset.Now) };
         var blobService = Substitute.For<IBlobService>();
         var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
         blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
+        var dbContext = Substitute.For<IDbContext>();
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
         var sut = new ReplayJob(
             blobService,
+            dbContext,
+            [blobProcessor],
+            backgroundJobClient,
+            new TraceContextAccessor(),
+            NullLogger<ReplayJob>.Instance
+        );
+        var storage = new InMemoryStorage();
+        await sut.Run(
+            "Test",
+            new PerformContext(
+                storage,
+                storage.GetConnection(),
+                new BackgroundJob(
+                    "test",
+                    new Job(typeof(ReplayJobTests).GetMethod(nameof(When_job_run_blobs_should_be_processed))),
+                    DateTime.Now
+                ),
+                new JobCancellationToken(false)
+            ),
+            CancellationToken.None
+        );
+
+        backgroundJobClient.ReceivedWithAnyArgs(1).Create(default, default);
+    }
+
+    [Fact]
+    public async Task When_job_run_blobs_and_has_state_only_not_processed_should_be_processed()
+    {
+        var blobs = new List<BlobMetadata>
+        {
+            new("Test blob 1", DateTimeOffset.Now),
+            new("Test blob 1", DateTimeOffset.Now.AddHours(1)),
+        };
+        var blobService = Substitute.For<IBlobService>();
+        var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
+        blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
+
+        var blobProcessor = Substitute.For<IBlobProcessor>();
+        var dbContext = Substitute.For<IDbContext>();
+        dbContext
+            .ReplayJobStates.Find("test", CancellationToken.None)
+            .Returns(
+                new ReplayJobState()
+                {
+                    Id = "test",
+                    BlobName = blobs[0].Name,
+                    Created = DateTime.Now,
+                }
+            );
+
+        blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
+
+        var sut = new ReplayJob(
+            blobService,
+            dbContext,
             [blobProcessor],
             backgroundJobClient,
             new TraceContextAccessor(),
@@ -63,11 +119,13 @@ public class ReplayJobTests
             .Returns(new BlobItem() { Name = "Test blob 1", Content = BinaryData.FromString("Test blob 1") });
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
+        var dbContext = Substitute.For<IDbContext>();
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
         var sut = new ReplayJob(
             blobService,
+            dbContext,
             [blobProcessor],
             backgroundJobClient,
             new TraceContextAccessor(),
