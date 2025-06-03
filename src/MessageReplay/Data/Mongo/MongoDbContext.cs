@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using Defra.TradeImportsMessageReplay.MessageReplay.Data.Entities;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Data.Mongo;
@@ -9,6 +10,7 @@ public class MongoDbContext : IDbContext
     public MongoDbContext(IMongoDatabase database)
     {
         Database = database;
+        ReplayJobStates = new MongoCollectionSet<ReplayJobState>(this);
     }
 
     internal IMongoDatabase Database { get; }
@@ -22,6 +24,8 @@ public class MongoDbContext : IDbContext
         return ActiveTransaction;
     }
 
+    public IMongoCollectionSet<ReplayJobState> ReplayJobStates { get; }
+
     public async Task SaveChangesAsync(CancellationToken cancellation = default)
     {
         if (GetChangedRecordsCount() == 0)
@@ -31,14 +35,14 @@ public class MongoDbContext : IDbContext
 
         if (GetChangedRecordsCount() == 1)
         {
-            await InternalSaveChangesAsync();
+            await InternalSaveChangesAsync(cancellation);
             return;
         }
 
         using var transaction = await StartTransaction(cancellation);
         try
         {
-            await InternalSaveChangesAsync();
+            await InternalSaveChangesAsync(cancellation);
             await transaction.CommitTransaction(cancellation);
         }
         catch (Exception)
@@ -48,17 +52,15 @@ public class MongoDbContext : IDbContext
         }
     }
 
-    private const int RecordsChanged = 0;
-
-    private static int GetChangedRecordsCount()
+    private int GetChangedRecordsCount()
     {
         // This logic needs to be reviewed as it's easy to forget to include any new collection sets
-        return RecordsChanged;
+        return ReplayJobStates.PendingChanges;
     }
 
-    private static Task InternalSaveChangesAsync()
+    private Task InternalSaveChangesAsync(CancellationToken cancellation = default)
     {
         // This logic needs to be reviewed as it's easy to forget to include any new collection sets
-        return Task.CompletedTask;
+        return ReplayJobStates.PersistAsync(cancellation);
     }
 }
