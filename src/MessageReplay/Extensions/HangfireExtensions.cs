@@ -37,7 +37,6 @@ public static class HangfireExtensions
                 mongoOptions?.DatabaseName,
                 new MongoStorageOptions
                 {
-                    
                     MigrationOptions = new MongoMigrationOptions
                     {
                         MigrationStrategy = new MigrateMongoMigrationStrategy(),
@@ -46,8 +45,7 @@ public static class HangfireExtensions
                     Prefix = "hangfire.mongo",
                     CheckConnection = true,
                     ConnectionCheckTimeout = TimeSpan.FromMinutes(1),
-                    QueuePollInterval = TimeSpan.FromSeconds(30)
-                    
+                    QueuePollInterval = TimeSpan.FromSeconds(30),
                 }
             );
         }
