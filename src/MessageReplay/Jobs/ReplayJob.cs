@@ -1,4 +1,6 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Data;
+using Defra.TradeImportsMessageReplay.MessageReplay.Data.Entities;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
 using Hangfire.Common;
@@ -9,6 +11,7 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 
 public class ReplayJob(
     IBlobService blobService,
+    IDbContext dbContext,
     IEnumerable<IBlobProcessor> blobProcessors,
     IBackgroundJobClient jobManager,
     ITraceContextAccessor traceContextAccessor,
@@ -18,9 +21,21 @@ public class ReplayJob(
     [JobDisplayName("Replaying folder - {0}")]
     public async Task Run(string prefix, PerformContext context, CancellationToken cancellationToken)
     {
-        var files = blobService.GetResourcesAsync(prefix, cancellationToken);
+        var blobs = blobService
+            .GetResourcesAsync(prefix, cancellationToken)
+            .ToBlockingEnumerable()
+            .OrderBy(x => x.CreatedOn)
+            .ToList();
+        var jobState = await dbContext.ReplayJobStates.Find(context.BackgroundJob.Id, cancellationToken);
+        var files = blobs.Select(x => x.Name).ToList();
 
-        await foreach (var file in files)
+        if (jobState is not null)
+        {
+            //skip until the filename is found, and this skip the blob as its already been processed
+            files = files.SkipWhile(x => x != jobState.BlobName).Skip(1).ToList();
+        }
+
+        foreach (var file in files)
         {
             jobManager.Create(
                 Job.FromExpression(
@@ -29,6 +44,19 @@ public class ReplayJob(
                 ),
                 new EnqueuedState(context.BackgroundJob.Job.Queue)
             );
+
+            var newJobState = new ReplayJobState() { Id = context.BackgroundJob.Id, BlobName = file };
+            if (jobState is null)
+            {
+                await dbContext.ReplayJobStates.Insert(newJobState, cancellationToken);
+            }
+            else
+            {
+                await dbContext.ReplayJobStates.Update(newJobState, jobState.ETag, cancellationToken);
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            jobState = newJobState;
         }
     }
 

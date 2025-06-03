@@ -44,6 +44,8 @@ public static class HangfireExtensions
                     },
                     Prefix = "hangfire.mongo",
                     CheckConnection = true,
+                    ConnectionCheckTimeout = TimeSpan.FromMinutes(1),
+                    QueuePollInterval = TimeSpan.FromSeconds(30),
                 }
             );
         }

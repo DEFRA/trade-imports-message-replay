@@ -24,7 +24,7 @@ public class BlobService(IBlobServiceClientFactory blobServiceClientFactory, IOp
         return _blobContainerClient;
     }
 
-    public async IAsyncEnumerable<string> GetResourcesAsync(
+    public async IAsyncEnumerable<BlobMetadata> GetResourcesAsync(
         string prefix,
         [EnumeratorCancellation] CancellationToken cancellationToken
     )
@@ -39,7 +39,7 @@ public class BlobService(IBlobServiceClientFactory blobServiceClientFactory, IOp
         {
             if (item.Properties.ContentLength is not 0 && item.Name.EndsWith(".json"))
             {
-                yield return item.Name;
+                yield return new BlobMetadata(item.Name, item.Properties.CreatedOn.GetValueOrDefault());
                 itemCount++;
             }
         }
