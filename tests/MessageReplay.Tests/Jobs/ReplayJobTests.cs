@@ -23,13 +23,11 @@ public class ReplayJobTests
         blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
-        var dbContext = Substitute.For<IDbContext>();
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
         var sut = new ReplayJob(
             blobService,
-            dbContext,
             [blobProcessor],
             backgroundJobClient,
             new TraceContextAccessor(),
@@ -67,28 +65,25 @@ public class ReplayJobTests
         blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
-        var dbContext = Substitute.For<IDbContext>();
-        dbContext
-            .ReplayJobStates.Find("test", CancellationToken.None)
-            .Returns(
-                new ReplayJobState()
-                {
-                    Id = "test",
-                    BlobName = blobs[0].Name,
-                    Created = DateTime.Now,
-                }
-            );
+        ReplayJob.AddJobState(
+            new ReplayJobState()
+            {
+                Id = nameof(When_job_run_blobs_and_has_state_only_not_processed_should_be_processed),
+                BlobName = blobs[0].Name,
+                Created = DateTime.Now,
+            }
+        );
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
         var sut = new ReplayJob(
             blobService,
-            dbContext,
             [blobProcessor],
             backgroundJobClient,
             new TraceContextAccessor(),
             NullLogger<ReplayJob>.Instance
         );
+
         var storage = new InMemoryStorage();
         await sut.Run(
             "Test",
@@ -119,13 +114,11 @@ public class ReplayJobTests
             .Returns(new BlobItem() { Name = "Test blob 1", Content = BinaryData.FromString("Test blob 1") });
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
-        var dbContext = Substitute.For<IDbContext>();
 
         blobProcessor.CanProcess(Arg.Any<string>()).Returns(true);
 
         var sut = new ReplayJob(
             blobService,
-            dbContext,
             [blobProcessor],
             backgroundJobClient,
             new TraceContextAccessor(),

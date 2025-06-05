@@ -109,7 +109,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
                 .UseRecommendedSerializerSettings()
                 .UseSerilogLogProvider()
                 .UseConsole()
-                .UseHangfireStorage(builder, integrationTest)
+                .UseInMemoryStorage()
         )
         .AddHangfireServer(options =>
         {

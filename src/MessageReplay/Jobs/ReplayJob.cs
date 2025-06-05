@@ -11,25 +11,25 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 
 public class ReplayJob(
     IBlobService blobService,
-    IDbContext dbContext,
     IEnumerable<IBlobProcessor> blobProcessors,
     IBackgroundJobClient jobManager,
     ITraceContextAccessor traceContextAccessor,
     ILogger<ReplayJob> logger
 )
 {
+    private static readonly Dictionary<string, ReplayJobState> jobStates = new Dictionary<string, ReplayJobState>();
+
     [JobDisplayName("Replaying folder - {0}")]
-    public async Task Run(string prefix, PerformContext context, CancellationToken cancellationToken)
+    public Task Run(string prefix, PerformContext context, CancellationToken cancellationToken)
     {
         var blobs = blobService
             .GetResourcesAsync(prefix, cancellationToken)
             .ToBlockingEnumerable()
             .OrderBy(x => x.CreatedOn)
             .ToList();
-        var jobState = await dbContext.ReplayJobStates.Find(context.BackgroundJob.Id, cancellationToken);
-        var files = blobs.Select(x => x.Name).ToList();
 
-        if (jobState is not null)
+        var files = blobs.Select(x => x.Name).ToList();
+        if (jobStates.TryGetValue(context.BackgroundJob.Id, out var jobState))
         {
             //skip until the filename is found, and this skip the blob as its already been processed
             files = files.SkipWhile(x => x != jobState.BlobName).Skip(1).ToList();
@@ -48,16 +48,17 @@ public class ReplayJob(
             var newJobState = new ReplayJobState() { Id = context.BackgroundJob.Id, BlobName = file };
             if (jobState is null)
             {
-                await dbContext.ReplayJobStates.Insert(newJobState, cancellationToken);
+                jobStates.Add(context.BackgroundJob.Id, newJobState);
             }
             else
             {
-                await dbContext.ReplayJobStates.Update(newJobState, jobState.ETag, cancellationToken);
+                jobStates[context.BackgroundJob.Id] = newJobState;
             }
 
-            await dbContext.SaveChangesAsync(cancellationToken);
             jobState = newJobState;
         }
+
+        return Task.CompletedTask;
     }
 
     [JobDisplayName("Replaying blob - {0}")]
@@ -70,5 +71,10 @@ public class ReplayJob(
         {
             await blobProcessor.Process(blobItem);
         }
+    }
+
+    public static void AddJobState(ReplayJobState jobState)
+    {
+        jobStates.Add(jobState.Id, jobState);
     }
 }
