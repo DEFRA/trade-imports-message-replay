@@ -1,9 +1,12 @@
 using System.Diagnostics.CodeAnalysis;
+using Elastic.CommonSchema;
 using Elastic.Serilog.Enrichers.Web;
 using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Serilog;
+using Serilog.Core;
+using Serilog.Settings.Configuration;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 
@@ -14,6 +17,7 @@ public static class WebApplicationBuilderExtensions
     {
         builder.Services.AddHttpContextAccessor();
         builder.Services.TryAddSingleton<ITraceContextAccessor, TraceContextAccessor>();
+        builder.Services.TryAddSingleton<ILogSwitchesAccessor, LogSwitchesAccessor>();
         builder
             .Services.AddOptions<TraceHeader>()
             .Bind(builder.Configuration)
@@ -52,8 +56,12 @@ public static class WebApplicationBuilderExtensions
         var traceHeader = services.GetRequiredService<IOptions<TraceHeader>>().Value;
         var serviceVersion = Environment.GetEnvironmentVariable("SERVICE_VERSION") ?? "";
 
+        var logLevelSwitches = services.GetRequiredService<ILogSwitchesAccessor>().LogLevelSwitches;
+
+        var readerOptions = new ConfigurationReaderOptions() { OnLevelSwitchCreated = logLevelSwitches.Add };
+
         config
-            .ReadFrom.Configuration(hostBuilderContext.Configuration)
+            .ReadFrom.Configuration(hostBuilderContext.Configuration, readerOptions)
             .Enrich.WithEcsHttpContext(httpAccessor)
             .Enrich.FromLogContext()
             .Enrich.With(new TraceContextEnricher())

@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
+using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Logging;
 using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
 using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
@@ -134,6 +135,7 @@ static WebApplication BuildWebApplication(WebApplicationBuilder builder)
     app.UseAuthorization();
     app.MapHealth();
     app.MapReplayEndpoints();
+    app.MapLoggingEndpoints();
     app.UseStatusCodePages();
     app.UseHangfireDashboard();
     app.UseExceptionHandler(
