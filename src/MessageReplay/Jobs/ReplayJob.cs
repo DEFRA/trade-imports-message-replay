@@ -35,17 +35,19 @@ public class ReplayJob(
             files = files.SkipWhile(x => x != jobState.BlobName).Skip(1).ToList();
         }
 
-        foreach (var file in files)
+        var fileGrouping = files.GroupBy(x => Path.GetFileName(x).Split("-")[0]).ToList();
+
+        foreach (var file in fileGrouping)
         {
             jobManager.Create(
                 Job.FromExpression(
-                    () => ProcessBlob(file, Guid.NewGuid().ToString("N"), null!, CancellationToken.None),
+                    () => ProcessBlob(file.ToArray(), Guid.NewGuid().ToString("N"), null!, CancellationToken.None),
                     context.BackgroundJob.Job.Queue
                 ),
                 new EnqueuedState(context.BackgroundJob.Job.Queue)
             );
 
-            var newJobState = new ReplayJobState() { Id = context.BackgroundJob.Id, BlobName = file };
+            var newJobState = new ReplayJobState() { Id = context.BackgroundJob.Id, BlobName = file.First() };
             if (jobState is null)
             {
                 jobStates.Add(context.BackgroundJob.Id, newJobState);
@@ -62,14 +64,17 @@ public class ReplayJob(
     }
 
     [JobDisplayName("Replaying blob - {0}")]
-    public async Task ProcessBlob(string file, string traceId, PerformContext context, CancellationToken token)
+    public async Task ProcessBlob(string[] files, string traceId, PerformContext context, CancellationToken token)
     {
         traceContextAccessor.Context = new TraceContext() { TraceId = traceId };
         logger.LogInformation("TraceId = {TraceId}", traceId);
-        var blobItem = await blobService.GetResource(file, token);
-        foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
+        foreach (var file in files)
         {
-            await blobProcessor.Process(blobItem);
+            var blobItem = await blobService.GetResource(file, token);
+            foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
+            {
+                await blobProcessor.Process(blobItem);
+            }
         }
     }
 
