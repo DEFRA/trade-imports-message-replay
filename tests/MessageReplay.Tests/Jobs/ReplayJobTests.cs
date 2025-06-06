@@ -17,7 +17,7 @@ public class ReplayJobTests
     [Fact]
     public async Task When_job_run_blobs_should_be_processed()
     {
-        var blobs = new List<BlobMetadata> { new("Test blob 1", DateTimeOffset.Now) };
+        var blobs = new List<BlobMetadata> { new("folder/test-file.json", DateTimeOffset.Now) };
         var blobService = Substitute.For<IBlobService>();
         var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
         blobService.GetResourcesAsync("Test", CancellationToken.None).Returns(blobs.ToAsyncEnumerable());
@@ -57,8 +57,8 @@ public class ReplayJobTests
     {
         var blobs = new List<BlobMetadata>
         {
-            new("Test blob 1", DateTimeOffset.Now),
-            new("Test blob 1", DateTimeOffset.Now.AddHours(1)),
+            new("Test/Test_blob-1.json", DateTimeOffset.Now),
+            new("Test/Test_blob-2.json", DateTimeOffset.Now.AddHours(1)),
         };
         var blobService = Substitute.For<IBlobService>();
         var backgroundJobClient = Substitute.For<IBackgroundJobClient>();
@@ -91,7 +91,7 @@ public class ReplayJobTests
                 storage,
                 storage.GetConnection(),
                 new BackgroundJob(
-                    "test",
+                    nameof(When_job_run_blobs_and_has_state_only_not_processed_should_be_processed),
                     new Job(typeof(ReplayJobTests).GetMethod(nameof(When_job_run_blobs_should_be_processed))),
                     DateTime.Now
                 ),
@@ -126,13 +126,13 @@ public class ReplayJobTests
         );
         var storage = new InMemoryStorage();
         await sut.ProcessBlob(
-            "test",
+            ["/folder/test-file.json"],
             Guid.NewGuid().ToString("N"),
             new PerformContext(
                 storage,
                 storage.GetConnection(),
                 new BackgroundJob(
-                    "test",
+                    "/folder/test-file.json",
                     new Job(typeof(ReplayJobTests).GetMethod(nameof(When_job_run_blobs_should_be_processed))),
                     DateTime.Now
                 ),
