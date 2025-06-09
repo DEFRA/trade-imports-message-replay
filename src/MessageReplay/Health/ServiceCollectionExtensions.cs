@@ -29,13 +29,13 @@ public static class ServiceCollectionExtensions
         if (!isIntegrationTests)
         {
             healthChecksBuilder.AddUrl(
-                new Uri(configuration.GetValue<string>("GatewayOptions:HealthUri")!),
-                "Gateway Api"
+                new Uri(configuration.GetValue<string>("DecisionComparerOptions:HealthUri")!),
+                "Decision Comparer  Api"
             );
 
             healthChecksBuilder.AddUrl(
                 new Uri(configuration.GetValue<string>("ImportProcessorOptions:HealthUri")!),
-                "Imports Processor"
+                "Imports Processor Api"
             );
         }
 

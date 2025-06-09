@@ -13,7 +13,12 @@ public class DecisionBlobProcessorTests
 {
     readonly ClearanceDecision clearanceDecision = new ClearanceDecision
     {
-        Header = new Header() { DecisionNumber = 1, EntryVersionNumber = 1 },
+        Header = new Header()
+        {
+            DecisionNumber = 1,
+            EntryVersionNumber = 1,
+            EntryReference = "testmrn",
+        },
         ServiceHeader = new ServiceHeader()
         {
             CorrelationId = "external-correlation-id",
@@ -92,12 +97,12 @@ public class DecisionBlobProcessorTests
     [Fact]
     public async Task When_receiving_decision_request_Then_should_convert_to_soap_and_send_to_gateway()
     {
-        var gatewayApi = Substitute.For<IGatewayApi>();
+        var gatewayApi = Substitute.For<IDecisionComparerApi>();
 
         var sut = new DecisionBlobProcessor(gatewayApi, NullLogger<DecisionBlobProcessor>.Instance);
         await sut.Process(new BlobItem() { Name = "Test", Content = BinaryData.FromObjectAsJson(clearanceDecision) });
 
-        await gatewayApi.Received(1).SendAlvsDecision(Arg.Any<string>());
+        await gatewayApi.Received(1).SendAlvsDecision(clearanceDecision.Header.EntryReference, Arg.Any<string>());
     }
 
     [Theory]
@@ -108,7 +113,7 @@ public class DecisionBlobProcessorTests
         bool expectedResult
     )
     {
-        var gatewayApi = Substitute.For<IGatewayApi>();
+        var gatewayApi = Substitute.For<IDecisionComparerApi>();
 
         var sut = new DecisionBlobProcessor(gatewayApi, NullLogger<DecisionBlobProcessor>.Instance);
         var result = sut.CanProcess(resourceType.ToString().ToLower());

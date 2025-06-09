@@ -19,12 +19,15 @@ public class ClearanceRequestBlobProcessorTests
     [Fact]
     public async Task When_receiving_clearance_request_Then_should_convert_to_soap_and_send_to_gateway()
     {
-        var gatewayApi = Substitute.For<IGatewayApi>();
+        var importProcessorApi = Substitute.For<IImportProcessorApi>();
 
-        var sut = new ClearanceRequestBlobProcessor(gatewayApi, NullLogger<ClearanceRequestBlobProcessor>.Instance);
+        var sut = new ClearanceRequestBlobProcessor(
+            importProcessorApi,
+            NullLogger<ClearanceRequestBlobProcessor>.Instance
+        );
         await sut.Process(new BlobItem() { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
 
-        await gatewayApi.Received(1).SendClearanceRequest(Arg.Any<string>());
+        await importProcessorApi.Received(1).SendClearanceRequest(Arg.Any<string>());
     }
 
     [Theory]
@@ -35,9 +38,12 @@ public class ClearanceRequestBlobProcessorTests
         bool expectedResult
     )
     {
-        var gatewayApi = Substitute.For<IGatewayApi>();
+        var importProcessorApi = Substitute.For<IImportProcessorApi>();
 
-        var sut = new ClearanceRequestBlobProcessor(gatewayApi, NullLogger<ClearanceRequestBlobProcessor>.Instance);
+        var sut = new ClearanceRequestBlobProcessor(
+            importProcessorApi,
+            NullLogger<ClearanceRequestBlobProcessor>.Instance
+        );
         var result = sut.CanProcess(resourceType.ToString().ToLower());
 
         result.Should().Be(expectedResult);

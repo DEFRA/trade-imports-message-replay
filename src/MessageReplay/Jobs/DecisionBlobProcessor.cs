@@ -6,7 +6,7 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Utils.JsonToSoap;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 
-public class DecisionBlobProcessor(IGatewayApi gatewayApi, ILogger<DecisionBlobProcessor> logger)
+public class DecisionBlobProcessor(IDecisionComparerApi decisionComparerApi, ILogger<DecisionBlobProcessor> logger)
     : BlobProcessor(ResourceType.Decision, logger)
 {
     protected override async Task ProcessBlobItem(BlobItem item)
@@ -15,6 +15,6 @@ public class DecisionBlobProcessor(IGatewayApi gatewayApi, ILogger<DecisionBlobP
         if (decision == null)
             throw new ArgumentException(nameof(decision));
         string soap = ClearanceDecisionToSoapConverter.Convert(decision, decision.Header.EntryReference);
-        await gatewayApi.SendAlvsDecision(soap);
+        await decisionComparerApi.SendAlvsDecision(decision.Header.EntryReference, soap);
     }
 }
