@@ -102,10 +102,14 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     builder.Services.AddTransient<TraceContextDelegatingHandler>();
     builder.Services.AddHttpClient("proxy").ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>();
     builder
-        .Services.AddRefitClient<IGatewayApi>()
+        .Services.AddRefitClient<IDecisionComparerApi>()
         .ConfigureHttpClient(c =>
-            c.BaseAddress = new Uri(builder.Configuration.GetValue<string>("GatewayOptions:BaseUri")!)
-        )
+        {
+            c.BaseAddress = new Uri(builder.Configuration.GetValue<string>("DecisionComparerOptions:BaseUri")!);
+            c.DefaultRequestHeaders.Authorization = AuthenticationHeaderValue.Parse(
+                $"Basic {builder.Configuration.GetValue<string>("DecisionComparerOptions:Auth")}"
+            );
+        })
         .ConfigurePrimaryHttpMessageHandler<ProxyHttpMessageHandler>()
         .AddHttpMessageHandler<TraceContextDelegatingHandler>();
 

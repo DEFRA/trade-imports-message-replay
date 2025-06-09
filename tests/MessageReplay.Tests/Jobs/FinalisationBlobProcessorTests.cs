@@ -19,12 +19,12 @@ public class FinalisationBlobProcessorTests
     [Fact]
     public async Task When_receiving_finalisation_request_Then_should_convert_to_soap_and_send_to_gateway()
     {
-        var gatewayApi = Substitute.For<IGatewayApi>();
+        var importProcessorApi = Substitute.For<IImportProcessorApi>();
 
-        var sut = new FinalisationBlobProcessor(gatewayApi, NullLogger<FinalisationBlobProcessor>.Instance);
+        var sut = new FinalisationBlobProcessor(importProcessorApi, NullLogger<FinalisationBlobProcessor>.Instance);
         await sut.Process(new BlobItem() { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
 
-        await gatewayApi.Received(1).SendFinalisation(Arg.Any<string>());
+        await importProcessorApi.Received(1).SendFinalisation(Arg.Any<string>());
     }
 
     [Theory]
@@ -35,9 +35,9 @@ public class FinalisationBlobProcessorTests
         bool expectedResult
     )
     {
-        var gatewayApi = Substitute.For<IGatewayApi>();
+        var importProcessorApi = Substitute.For<IImportProcessorApi>();
 
-        var sut = new FinalisationBlobProcessor(gatewayApi, NullLogger<FinalisationBlobProcessor>.Instance);
+        var sut = new FinalisationBlobProcessor(importProcessorApi, NullLogger<FinalisationBlobProcessor>.Instance);
         var result = sut.CanProcess(resourceType.ToString().ToLower());
 
         result.Should().Be(expectedResult);
