@@ -57,7 +57,7 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ENVIRONMENT: local
       PORT: 8080
-      GatewayOptions__HealthUri: http://wiremock/health
+      DecisionComparerOptions__HealthUri: http://wiremock/health
       ImportProcessorOptions__HealthUri: http://wiremock/health
       Mongo__DatabaseUri: mongodb://mongodb:27017/?directConnection=true
       BlobServiceOptions__CredentialType: StorageSharedKeyCredential
