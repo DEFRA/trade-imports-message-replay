@@ -52,10 +52,10 @@ public class SoapContent
     {
         if (string.IsNullOrWhiteSpace(soapString))
             return null;
-        
+
         var doc = new XmlDocument();
         doc.LoadXml(soapString);
-        
+
         return doc.DocumentElement;
     }
 }

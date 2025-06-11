@@ -14,9 +14,9 @@ public class DecisionBlobProcessor(IDecisionComparerApi decisionComparerApi, ILo
         var decision = item.Content.ToObjectFromJson<ClearanceDecision>();
         if (decision == null)
             throw new ArgumentException(nameof(decision));
-        
+
         var soap = ClearanceDecisionToSoapConverter.Convert(decision, decision.Header.EntryReference);
-        
+
         await decisionComparerApi.SendAlvsDecision(decision.Header.EntryReference, soap);
     }
 }

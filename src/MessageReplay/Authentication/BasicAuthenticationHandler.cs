@@ -23,7 +23,7 @@ public class BasicAuthenticationHandler(
         var endpoint = Context.GetEndpoint();
         if (endpoint?.Metadata.GetMetadata<IAllowAnonymous>() != null)
             return NoResult();
-        
+
         var authorizationHeader = Request.Headers.Authorization.ToString();
         if (string.IsNullOrEmpty(authorizationHeader))
             return Fail();
@@ -53,7 +53,7 @@ public class BasicAuthenticationHandler(
 
         return Success(ticket);
     }
-    
+
     private static Task<AuthenticateResult> NoResult() => Task.FromResult(AuthenticateResult.NoResult());
 
     private static Task<AuthenticateResult> Fail() => Task.FromResult(AuthenticateResult.Fail("Failed authorization"));

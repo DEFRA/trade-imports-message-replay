@@ -67,13 +67,13 @@ public class ReplayJob(
     public async Task ProcessBlob(string[] files, string traceId, PerformContext context, CancellationToken token)
     {
         traceContextAccessor.Context = new TraceContext { TraceId = traceId };
-        
+
         logger.LogInformation("TraceId {TraceId}", traceId);
-        
+
         foreach (var file in files)
         {
             var blobItem = await blobService.GetResource(file, token);
-            
+
             foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
             {
                 await blobProcessor.Process(blobItem);

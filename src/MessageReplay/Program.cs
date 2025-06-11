@@ -73,7 +73,7 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
     {
         var resilienceOptions = new HttpStandardResilienceOptions { Retry = { UseJitter = true } };
         resilienceOptions.Retry.DisableForUnsafeHttpMethods();
-        
+
         options.ConfigureHttpClient(c =>
         {
             // Disable the HttpClient timeout to allow the resilient pipeline below
