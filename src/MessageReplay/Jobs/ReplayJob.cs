@@ -1,5 +1,4 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
-using Defra.TradeImportsMessageReplay.MessageReplay.Data;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Entities;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
 using Hangfire;
@@ -17,21 +16,22 @@ public class ReplayJob(
     ILogger<ReplayJob> logger
 )
 {
-    private static readonly Dictionary<string, ReplayJobState> jobStates = new Dictionary<string, ReplayJobState>();
+    private static readonly Dictionary<string, ReplayJobState> s_jobStates = new();
 
     [JobDisplayName("Replaying folder - {0}")]
     public Task Run(string prefix, PerformContext context, CancellationToken cancellationToken)
     {
         var blobs = blobService
             .GetResourcesAsync(prefix, cancellationToken)
-            .ToBlockingEnumerable()
+            .ToBlockingEnumerable(cancellationToken)
             .OrderBy(x => x.CreatedOn)
             .ToList();
 
         var files = blobs.Select(x => x.Name).ToList();
-        if (jobStates.TryGetValue(context.BackgroundJob.Id, out var jobState))
+        if (s_jobStates.TryGetValue(context.BackgroundJob.Id, out var jobState))
         {
-            //skip until the filename is found, and this skip the blob as its already been processed
+            // If the job is being retried, and we have state for the job ID, skip
+            // until the filename is found; this will then continue where it finished previously
             files = files.SkipWhile(x => x != jobState.BlobName).Skip(1).ToList();
         }
 
@@ -47,14 +47,14 @@ public class ReplayJob(
                 new EnqueuedState(context.BackgroundJob.Job.Queue)
             );
 
-            var newJobState = new ReplayJobState() { Id = context.BackgroundJob.Id, BlobName = file.First() };
+            var newJobState = new ReplayJobState { Id = context.BackgroundJob.Id, BlobName = file.First() };
             if (jobState is null)
             {
-                jobStates.Add(context.BackgroundJob.Id, newJobState);
+                s_jobStates.Add(context.BackgroundJob.Id, newJobState);
             }
             else
             {
-                jobStates[context.BackgroundJob.Id] = newJobState;
+                s_jobStates[context.BackgroundJob.Id] = newJobState;
             }
 
             jobState = newJobState;
@@ -66,11 +66,14 @@ public class ReplayJob(
     [JobDisplayName("Replaying blob - {0}")]
     public async Task ProcessBlob(string[] files, string traceId, PerformContext context, CancellationToken token)
     {
-        traceContextAccessor.Context = new TraceContext() { TraceId = traceId };
-        logger.LogInformation("TraceId = {TraceId}", traceId);
+        traceContextAccessor.Context = new TraceContext { TraceId = traceId };
+
+        logger.LogInformation("TraceId {TraceId}", traceId);
+
         foreach (var file in files)
         {
             var blobItem = await blobService.GetResource(file, token);
+
             foreach (var blobProcessor in blobProcessors.Where(x => x.CanProcess(context.BackgroundJob.Job.Queue)))
             {
                 await blobProcessor.Process(blobItem);
@@ -80,6 +83,6 @@ public class ReplayJob(
 
     public static void AddJobState(ReplayJobState jobState)
     {
-        jobStates.Add(jobState.Id, jobState);
+        s_jobStates.Add(jobState.Id, jobState);
     }
 }

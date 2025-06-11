@@ -1,5 +1,3 @@
-using Defra.TradeImportsMessageReplay.MessageReplay.Tests;
-
 namespace BtmsGateway.Test.Services.Converter.Fixtures;
 
 public class JsonToXmlTestData : TheoryData<string, string, string>

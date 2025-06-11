@@ -22,7 +22,7 @@ public class FinalisationBlobProcessorTests
         var importProcessorApi = Substitute.For<IImportProcessorApi>();
 
         var sut = new FinalisationBlobProcessor(importProcessorApi, NullLogger<FinalisationBlobProcessor>.Instance);
-        await sut.Process(new BlobItem() { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
+        await sut.Process(new BlobItem { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
 
         await importProcessorApi.Received(1).SendFinalisation(Arg.Any<string>());
     }

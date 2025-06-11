@@ -4,13 +4,13 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
-using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Services;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
+using Elastic.CommonSchema.Serilog;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.Console.Extensions;
@@ -21,7 +21,7 @@ using Refit;
 using Serilog;
 using ServiceCollectionExtensions = Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions.ServiceCollectionExtensions;
 
-Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
+Log.Logger = new LoggerConfiguration().WriteTo.Console(new EcsTextFormatter()).CreateBootstrapLogger();
 ServiceCollectionExtensions.BootstrapMongo();
 
 try
@@ -64,17 +64,16 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
         options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-    // Load certificates into Trust Store - Note must happen before Mongo and Http client connections
+    // Must happen before Mongo and Http client connections
     builder.Services.AddCustomTrustStore();
 
     builder.ConfigureLoggingAndTracing(integrationTest);
 
-    var resilienceOptions = new HttpStandardResilienceOptions { Retry = { UseJitter = true } };
-    resilienceOptions.Retry.DisableForUnsafeHttpMethods();
-
-    // This adds default rate limiter, total request timeout, retries, circuit breaker and timeout per attempt
     builder.Services.ConfigureHttpClientDefaults(options =>
     {
+        var resilienceOptions = new HttpStandardResilienceOptions { Retry = { UseJitter = true } };
+        resilienceOptions.Retry.DisableForUnsafeHttpMethods();
+
         options.ConfigureHttpClient(c =>
         {
             // Disable the HttpClient timeout to allow the resilient pipeline below
@@ -143,11 +142,11 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
         {
             options.Queues =
             [
-                ResourceType.ImportPreNotification.ToString().ToLower(),
-                ResourceType.ClearanceRequest.ToString().ToLower(),
-                ResourceType.Decision.ToString().ToLower(),
-                ResourceType.Finalisation.ToString().ToLower(),
-                ResourceType.Gmr.ToString().ToLower(),
+                nameof(ResourceType.ImportPreNotification).ToLower(),
+                nameof(ResourceType.ClearanceRequest).ToLower(),
+                nameof(ResourceType.Decision).ToLower(),
+                nameof(ResourceType.Finalisation).ToLower(),
+                nameof(ResourceType.Gmr).ToLower(),
             ];
         })
         .AddHangfireConsoleExtensions();

@@ -50,6 +50,6 @@ public class ConfidentialClientApplicationTokenCredential : TokenCredential
 
     public override AccessToken GetToken(TokenRequestContext requestContext, CancellationToken cancellationToken)
     {
-        return GetTokenAsync(requestContext, cancellationToken).GetAwaiter().GetResult();
+        return GetTokenAsync(requestContext, cancellationToken).AsTask().GetAwaiter().GetResult();
     }
 }

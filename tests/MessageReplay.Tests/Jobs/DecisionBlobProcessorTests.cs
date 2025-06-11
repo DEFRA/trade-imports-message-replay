@@ -13,13 +13,13 @@ public class DecisionBlobProcessorTests
 {
     readonly ClearanceDecision clearanceDecision = new ClearanceDecision
     {
-        Header = new Header()
+        Header = new Header
         {
             DecisionNumber = 1,
             EntryVersionNumber = 1,
             EntryReference = "testmrn",
         },
-        ServiceHeader = new ServiceHeader()
+        ServiceHeader = new ServiceHeader
         {
             CorrelationId = "external-correlation-id",
             ServiceCallTimestamp = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)
@@ -100,7 +100,7 @@ public class DecisionBlobProcessorTests
         var gatewayApi = Substitute.For<IDecisionComparerApi>();
 
         var sut = new DecisionBlobProcessor(gatewayApi, NullLogger<DecisionBlobProcessor>.Instance);
-        await sut.Process(new BlobItem() { Name = "Test", Content = BinaryData.FromObjectAsJson(clearanceDecision) });
+        await sut.Process(new BlobItem { Name = "Test", Content = BinaryData.FromObjectAsJson(clearanceDecision) });
 
         await gatewayApi.Received(1).SendAlvsDecision(clearanceDecision.Header.EntryReference, Arg.Any<string>());
     }
