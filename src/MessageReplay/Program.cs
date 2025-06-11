@@ -64,17 +64,16 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
         options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-    // Load certificates into Trust Store - Note must happen before Mongo and Http client connections
+    // Must happen before Mongo and Http client connections
     builder.Services.AddCustomTrustStore();
 
     builder.ConfigureLoggingAndTracing(integrationTest);
 
-    var resilienceOptions = new HttpStandardResilienceOptions { Retry = { UseJitter = true } };
-    resilienceOptions.Retry.DisableForUnsafeHttpMethods();
-
-    // This adds default rate limiter, total request timeout, retries, circuit breaker and timeout per attempt
     builder.Services.ConfigureHttpClientDefaults(options =>
     {
+        var resilienceOptions = new HttpStandardResilienceOptions { Retry = { UseJitter = true } };
+        resilienceOptions.Retry.DisableForUnsafeHttpMethods();
+        
         options.ConfigureHttpClient(c =>
         {
             // Disable the HttpClient timeout to allow the resilient pipeline below
