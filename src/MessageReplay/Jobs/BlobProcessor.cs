@@ -7,12 +7,13 @@ public abstract class BlobProcessor(ResourceType resourceType, ILogger logger) :
 {
     public bool CanProcess(string queue)
     {
-        return queue == resourceType.ToString().ToLower();
+        return queue.Equals(resourceType.ToString(), StringComparison.CurrentCultureIgnoreCase);
     }
 
     public Task Process(BlobItem item)
     {
         logger.LogInformation("Processing blob item: {Blob}", item.Name);
+        
         return ProcessBlobItem(item);
     }
 

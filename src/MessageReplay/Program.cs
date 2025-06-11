@@ -142,11 +142,11 @@ static void ConfigureWebApplication(WebApplicationBuilder builder, string[] args
         {
             options.Queues =
             [
-                ResourceType.ImportPreNotification.ToString().ToLower(),
-                ResourceType.ClearanceRequest.ToString().ToLower(),
-                ResourceType.Decision.ToString().ToLower(),
-                ResourceType.Finalisation.ToString().ToLower(),
-                ResourceType.Gmr.ToString().ToLower(),
+                nameof(ResourceType.ImportPreNotification).ToLower(),
+                nameof(ResourceType.ClearanceRequest).ToLower(),
+                nameof(ResourceType.Decision).ToLower(),
+                nameof(ResourceType.Finalisation).ToLower(),
+                nameof(ResourceType.Gmr).ToLower(),
             ];
         })
         .AddHangfireConsoleExtensions();

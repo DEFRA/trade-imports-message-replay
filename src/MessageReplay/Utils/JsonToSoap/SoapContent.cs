@@ -5,7 +5,7 @@ namespace Defra.TradeImportsMessageReplay.MessageReplay.Utils.JsonToSoap;
 
 public class SoapContent
 {
-    public string? SoapString { get; }
+    private string? SoapString { get; }
 
     private readonly XmlNode? _soapXmlNode;
 
@@ -48,12 +48,14 @@ public class SoapContent
         return string.Join('/', messageSubXPath.Trim('/').Split('/').Select(element => $"*[local-name()='{element}']"));
     }
 
-    private static XmlNode? GetElement(string? soapString)
+    private static XmlElement? GetElement(string? soapString)
     {
         if (string.IsNullOrWhiteSpace(soapString))
             return null;
+        
         var doc = new XmlDocument();
         doc.LoadXml(soapString);
+        
         return doc.DocumentElement;
     }
 }
