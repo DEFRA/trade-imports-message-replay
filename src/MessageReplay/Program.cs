@@ -4,13 +4,13 @@ using Defra.TradeImportsMessageReplay.MessageReplay.Authentication;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Endpoints.Replay;
-using Defra.TradeImportsMessageReplay.MessageReplay.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Health;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs.Extensions;
 using Defra.TradeImportsMessageReplay.MessageReplay.Services;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Http;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
+using Elastic.CommonSchema.Serilog;
 using Hangfire;
 using Hangfire.Console;
 using Hangfire.Console.Extensions;
@@ -21,7 +21,7 @@ using Refit;
 using Serilog;
 using ServiceCollectionExtensions = Defra.TradeImportsMessageReplay.MessageReplay.Data.Extensions.ServiceCollectionExtensions;
 
-Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
+Log.Logger = new LoggerConfiguration().WriteTo.Console(new EcsTextFormatter()).CreateBootstrapLogger();
 ServiceCollectionExtensions.BootstrapMongo();
 
 try
