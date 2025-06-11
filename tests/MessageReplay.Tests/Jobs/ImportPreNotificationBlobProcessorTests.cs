@@ -22,7 +22,7 @@ public class ImportPreNotificationBlobProcessorTests
         var api = Substitute.For<IImportProcessorApi>();
 
         var sut = new ImportPreNotificationBlobProcessor(api, NullLogger<ImportPreNotificationBlobProcessor>.Instance);
-        await sut.Process(new BlobItem() { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
+        await sut.Process(new BlobItem { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
 
         await api.Received(1).SendImportPreNotification(Arg.Any<string>());
     }

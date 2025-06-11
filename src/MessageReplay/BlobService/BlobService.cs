@@ -51,6 +51,6 @@ public class BlobService(IBlobServiceClientFactory blobServiceClientFactory, IOp
         var blobClient = client.GetBlobClient(path);
 
         var content = await blobClient.DownloadContentAsync(cancellationToken);
-        return new BlobItem() { Name = path, Content = content.Value.Content };
+        return new BlobItem { Name = path, Content = content.Value.Content };
     }
 }

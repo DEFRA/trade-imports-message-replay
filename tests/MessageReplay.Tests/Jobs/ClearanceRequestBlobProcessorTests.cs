@@ -25,7 +25,7 @@ public class ClearanceRequestBlobProcessorTests
             importProcessorApi,
             NullLogger<ClearanceRequestBlobProcessor>.Instance
         );
-        await sut.Process(new BlobItem() { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
+        await sut.Process(new BlobItem { Name = "Test", Content = BinaryData.FromString(SimpleJson) });
 
         await importProcessorApi.Received(1).SendClearanceRequest(Arg.Any<string>());
     }

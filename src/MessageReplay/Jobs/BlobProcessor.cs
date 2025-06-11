@@ -12,7 +12,7 @@ public abstract class BlobProcessor(ResourceType resourceType, ILogger logger) :
 
     public Task Process(BlobItem item)
     {
-        logger.LogInformation("Processing blob item: {Blob}", item.Name);
+        logger.LogInformation("Processing blob item {Blob}", item.Name);
         
         return ProcessBlobItem(item);
     }

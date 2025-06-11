@@ -11,8 +11,8 @@ public class ClearanceDecisionToSoapConverterTests
     {
         var clearanceDecision = new ClearanceDecision
         {
-            Header = new Header() { DecisionNumber = 1, EntryVersionNumber = 1 },
-            ServiceHeader = new ServiceHeader()
+            Header = new Header { DecisionNumber = 1, EntryVersionNumber = 1 },
+            ServiceHeader = new ServiceHeader
             {
                 CorrelationId = "external-correlation-id",
                 ServiceCallTimestamp = new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc)

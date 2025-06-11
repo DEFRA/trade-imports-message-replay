@@ -1,5 +1,4 @@
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
-using Defra.TradeImportsMessageReplay.MessageReplay.Data;
 using Defra.TradeImportsMessageReplay.MessageReplay.Data.Entities;
 using Defra.TradeImportsMessageReplay.MessageReplay.Jobs;
 using Defra.TradeImportsMessageReplay.MessageReplay.Utils.Logging;
@@ -66,7 +65,7 @@ public class ReplayJobTests
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
         ReplayJob.AddJobState(
-            new ReplayJobState()
+            new ReplayJobState
             {
                 Id = nameof(When_job_run_blobs_and_has_state_only_not_processed_should_be_processed),
                 BlobName = blobs[0].Name,
@@ -111,7 +110,7 @@ public class ReplayJobTests
 
         blobService
             .GetResource("Test blob 1", CancellationToken.None)
-            .Returns(new BlobItem() { Name = "Test blob 1", Content = BinaryData.FromString("Test blob 1") });
+            .Returns(new BlobItem { Name = "Test blob 1", Content = BinaryData.FromString("Test blob 1") });
 
         var blobProcessor = Substitute.For<IBlobProcessor>();
 
