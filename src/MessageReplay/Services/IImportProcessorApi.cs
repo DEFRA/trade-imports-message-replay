@@ -3,7 +3,7 @@ using Refit;
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Services;
 
 [Headers("Content-Type: application/json")]
-public interface IImportProcessorApi
+public interface IImportProcessorApi : IHealthApi
 {
     [Post("/replay/import-pre-notifications")]
     Task SendImportPreNotification([Body] string data);

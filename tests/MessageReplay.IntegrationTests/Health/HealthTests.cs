@@ -16,7 +16,7 @@ public class HealthTests(WireMockClient wireMockClient) : IntegrationTestBase
     {
         var getMappingBuilder = _wireMockAdminApi.GetMappingBuilder();
         getMappingBuilder.Given(m =>
-            m.WithRequest(req => req.UsingGet().WithPath("/health"))
+            m.WithRequest(req => req.UsingGet().WithPath("/health/authorized"))
                 .WithResponse(rsp =>
                 {
                     rsp.WithStatusCode(HttpStatusCode.OK);
