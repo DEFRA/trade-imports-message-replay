@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Defra.TradeImportsMessageReplay.MessageReplay.BlobService;
+using Defra.TradeImportsMessageReplay.MessageReplay.Services;
 using MongoDB.Driver;
 
 namespace Defra.TradeImportsMessageReplay.MessageReplay.Health;
@@ -28,15 +29,8 @@ public static class ServiceCollectionExtensions
 
         if (!isIntegrationTests)
         {
-            healthChecksBuilder.AddUrl(
-                new Uri(configuration.GetValue<string>("DecisionComparerOptions:HealthUri")!),
-                "Decision Comparer  Api"
-            );
-
-            healthChecksBuilder.AddUrl(
-                new Uri(configuration.GetValue<string>("ImportProcessorOptions:HealthUri")!),
-                "Imports Processor Api"
-            );
+            healthChecksBuilder.AddHealthApiCheck<IDecisionComparerApi>("Decision Comparer Api");
+            healthChecksBuilder.AddHealthApiCheck<IImportProcessorApi>("Imports Processor Api");
         }
 
         return services;
